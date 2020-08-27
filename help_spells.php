@@ -3,7 +3,6 @@ require 'lib/lib.php';
 $link = opendb();
 $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
 $controlrow = mysql_fetch_array($controlquery);
-ob_start("ob_gzhandler");
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">

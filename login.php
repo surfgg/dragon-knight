@@ -8,7 +8,6 @@ if (isset($_GET["do"])) {
 
 function login() {
     
-    include('config.php');
     $link = opendb();
     
     if (isset($_POST["submit"])) {
@@ -17,7 +16,7 @@ function login() {
         if (mysql_num_rows($query) != 1) { die("Invalid username or password. Please go back and try again."); }
         $row = mysql_fetch_array($query);
         if (isset($_POST["rememberme"])) { $expiretime = time()+31536000; $rememberme = 1; } else { $expiretime = 0; $rememberme = 0; }
-        $cookie = $row["id"] . " " . $row["username"] . " " . md5($row["password"] . "--" . $dbsettings["secretword"]) . " " . $rememberme;
+        $cookie = $row["id"] . " " . $row["username"] . " " . md5($row["password"]) . " " . $rememberme;
         setcookie("dkgame", $cookie, $expiretime, "/", "", 0);
         header("Location: index.php");
         die();
