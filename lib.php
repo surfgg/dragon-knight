@@ -26,14 +26,38 @@ $numqueries = 0;
 $version = "1.1.11";
 $build = "";
 
-function opendb() { // Open database connection.
+function config(string $key = '')
+{
+    $config = require('config.php');
 
-    include('config.php');
-    extract($dbsettings);
+    if (empty($key)) {
+        return $config;
+    }
+
+    if (array_key_exists($key, $config)) {
+        return $config[$key];
+    }
+
+    $result = $config;
+
+    foreach (explode('.', $key) as $segment) {
+        if (!is_array($config) || !array_key_exists($segment, $config)) {
+            return null;
+        }
+
+        $result = &$result[$segment];
+    }
+
+    return $result;
+}
+
+function opendb()
+{
+    $config = require('config.php')['db'];
+
     $link = mysql_connect($server, $user, $pass) or die(mysql_error());
     mysql_select_db($name) or die(mysql_error());
     return $link;
-
 }
 
 function doquery($query, $table) { // Something of a tiny little database abstraction layer.
