@@ -4,10 +4,10 @@
 - [Old repo](https://github.com/renderse7en/dragon-knight)
 - See also: [Dragon Scourge](https://github.com/renderse7en/dragon-scourge)
 
-Many years ago, @renderse7en made a cool little text-based RPG in PHP4. It was a fun side project, helped him learn to code, and a lot of people like it.
+Many years ago, [@renderse7en](https://github.com/renderse7en) made a cool little text-based RPG in PHP4. It was a fun side project, helped him learn to code, and a lot of people like it.
 Then, everything changed when he abandoned the source code to the wastes of the internet in 2007.
 
-Fast forward 3 years and @splashsky finds that abandoned, decrepit code. He learns how to program in PHP from it. Another 10 years into the future, and
+Fast forward 3 years and [@splashsky](https://github.com/splashsky) finds that abandoned, decrepit code. He learns how to program in PHP from it. Another 10 years into the future, and
 now he's reviving that project so that other rookies can learn from the same fun project he did!
 
 - Found a bug? Have a suggestion, or a question? Open an Issue!
