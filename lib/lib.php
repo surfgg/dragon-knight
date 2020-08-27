@@ -27,6 +27,11 @@ $numqueries = 0;
 $version = "1.1.11";
 $build = "";
 
+/**
+ * This helper function allows us to access config values
+ * by dot notation. For example, instead of $config['db']['username']
+ * we can do config('db.username')
+ */
 function config(string $key = '')
 {
     global $config;
@@ -50,6 +55,20 @@ function config(string $key = '')
     }
 
     return $result;
+}
+
+/**
+ * This streamlines getting the prefixed table names for
+ * the database. Will eventually be moved into a database
+ * class.
+ */
+function tablePrefix(string $table)
+{
+    if (!empty(config('db.prefix'))) {
+        return config('db.prefix') . '_' . $table;
+    }
+
+    return $table;
 }
 
 function opendb()
