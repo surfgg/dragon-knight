@@ -5,7 +5,7 @@
  * enabled and the game won't check for the installation
  * file
  */
-define('DEBUG', false);
+define('DEBUG', true);
 
 if (DEBUG) {
     ini_set('display_errors', 1);
@@ -21,6 +21,7 @@ if (DEBUG) {
  */
 require 'lib/mysql-shim.php';
 
+$config = require 'config.php';
 $starttime = getmicrotime();
 $numqueries = 0;
 $version = "1.1.11";
@@ -28,7 +29,7 @@ $build = "";
 
 function config(string $key = '')
 {
-    $config = require('config.php');
+    global $config;
 
     if (empty($key)) {
         return $config;
@@ -41,7 +42,7 @@ function config(string $key = '')
     $result = $config;
 
     foreach (explode('.', $key) as $segment) {
-        if (!is_array($config) || !array_key_exists($segment, $config)) {
+        if (!is_array($result) || !array_key_exists($segment, $result)) {
             return null;
         }
 
@@ -53,10 +54,8 @@ function config(string $key = '')
 
 function opendb()
 {
-    $config = require('config.php')['db'];
-
-    $link = mysql_connect($server, $user, $pass) or die(mysql_error());
-    mysql_select_db($name) or die(mysql_error());
+    $link = mysql_connect(config('db.server'), config('db.user'), config('db.password')) or die(mysql_error());
+    mysql_select_db(config('db.name')) or die(mysql_error());
     return $link;
 }
 
