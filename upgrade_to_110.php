@@ -1,7 +1,7 @@
 <?
 
 include('config.php');
-include('lib.php');
+require 'lib/lib.php';
 $link = opendb();
 $prefix = $dbsettings["prefix"];
 

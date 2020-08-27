@@ -1,5 +1,5 @@
 <?php 
-include('lib.php'); 
+require 'lib/lib.php'; 
 $link = opendb();
 $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
 $controlrow = mysql_fetch_array($controlquery);

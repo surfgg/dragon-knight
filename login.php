@@ -1,6 +1,6 @@
 <?php // login.php :: Handles logins and cookies.
 
-include('lib.php');
+require 'lib/lib.php';
 if (isset($_GET["do"])) {
     if ($_GET["do"] == "login") { login(); }
     elseif ($_GET["do"] == "logout") { logout(); }

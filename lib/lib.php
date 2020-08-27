@@ -19,9 +19,9 @@ if (DEBUG) {
  * undesirable fix for the project.
  * Credit: @dshafik https://github.com/dshafik/php7-mysql-shim
  */
-require 'lib/mysql-shim.php';
+require 'lib/vendor/mysql-shim.php';
 
-$config = require 'config.php';
+$config = require 'lib/config.php';
 $starttime = getmicrotime();
 $numqueries = 0;
 $version = "1.1.11";
@@ -55,7 +55,7 @@ function config(string $key = '')
 function opendb()
 {
     $link = mysql_connect(config('db.server'), config('db.user'), config('db.password')) or die(mysql_error());
-    mysql_select_db(config('db.name')) or die(mysql_error());
+    mysql_select_db(config('db.database')) or die(mysql_error());
     return $link;
 }
 
