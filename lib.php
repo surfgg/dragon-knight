@@ -1,4 +1,17 @@
-<?php // lib.php :: Common functions used throughout the program.
+<?php
+
+/**
+ * Debug flag; when set to true, full errror reporting is
+ * enabled and the game won't check for the installation
+ * file
+ */
+define('DEBUG', false);
+
+if (DEBUG) {
+    ini_set('display_errors', 1);
+    ini_set('display_startup_errors', 1);
+    error_reporting(E_ALL);
+}
 
 /**
  * This brings in a shim that allows the (unsafe) usage

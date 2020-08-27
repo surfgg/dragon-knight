@@ -1,6 +1,9 @@
-<?php // index.php :: Primary program script, evil alien overlord, you decide.
+<?php
 
-if (file_exists('install.php')) { die("Please delete <b>install.php</b> from your Dragon Knight directory before continuing."); }
+if (file_exists('install.php') && !DEBUG) {
+    die('Please delete <b>install.php</b> from your Dragon Knight directory before continuing.'); 
+}
+
 include('lib.php');
 include('cookies.php');
 $link = opendb();
@@ -30,7 +33,7 @@ if (isset($_GET["do"])) {
     elseif ($do[0] == "buy") { include('towns.php'); buy(); }
     elseif ($do[0] == "buy2") { include('towns.php'); buy2($do[1]); }
     elseif ($do[0] == "buy3") { include('towns.php'); buy3($do[1]); }
-    elseif ($do[0] == "sell") { include('towns.php'); sell(); }
+    //elseif ($do[0] == "sell") { include('towns.php'); sell(); }
     elseif ($do[0] == "maps") { include('towns.php'); maps(); }
     elseif ($do[0] == "maps2") { include('towns.php'); maps2($do[1]); }
     elseif ($do[0] == "maps3") { include('towns.php'); maps3($do[1]); }
