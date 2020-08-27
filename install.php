@@ -61,18 +61,17 @@ function second() { // Second page - set up the database tables.
     
     global $dbsettings;
     echo "<html><head><title>Dragon Knight Installation</title></head><body><b>Dragon Knight Installation: Page Two</b><br /><br />";
-    $prefix = $dbsettings["prefix"];
-    $babble = $prefix . "_babble";
-    $control = $prefix . "_control";
-    $drops = $prefix . "_drops";
-    $forum = $prefix . "_forum";
-    $items = $prefix . "_items";
-    $levels = $prefix . "_levels";
-    $monsters = $prefix . "_monsters";
-    $news = $prefix . "_news";
-    $spells = $prefix . "_spells";
-    $towns = $prefix . "_towns";
-    $users = $prefix . "_users";
+    $babble = tablePrefix('babble');
+    $control = tablePrefix('control');
+    $drops = tablePrefix('drops');
+    $forum = tablePrefix('forum');
+    $items = tablePrefix('items');
+    $levels = tablePrefix('levels');
+    $monsters = tablePrefix('monsters');
+    $news = tablePrefix('news');
+    $spells = tablePrefix('spells');
+    $towns = tablePrefix('towns');
+    $users = tablePrefix('users');
     
     if (isset($_POST["complete"])) { $full = true; } else { $full = false; }
     

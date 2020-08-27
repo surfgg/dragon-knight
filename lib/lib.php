@@ -80,9 +80,8 @@ function opendb()
 
 function doquery($query, $table) { // Something of a tiny little database abstraction layer.
     
-    include('config.php');
     global $numqueries;
-    $sqlquery = mysql_query(str_replace("{{table}}", $dbsettings["prefix"] . "_" . $table, $query)) or die(mysql_error());
+    $sqlquery = mysql_query(str_replace("{{table}}", tablePrefix($table), $query)) or die(mysql_error());
     $numqueries++;
     return $sqlquery;
 
