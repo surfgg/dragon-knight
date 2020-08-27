@@ -24,8 +24,8 @@ require 'lib/vendor/mysql-shim.php';
 $config = require 'lib/config.php';
 $starttime = getmicrotime();
 $numqueries = 0;
-$version = "1.1.11";
-$build = "";
+$version = config('general.version');
+$build = config('general.build');
 
 /**
  * This helper function allows us to access config values
