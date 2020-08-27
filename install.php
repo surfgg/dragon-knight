@@ -757,7 +757,7 @@ function fourth() { // Final page: insert new user row, congratulate the person 
     $password = md5($password1);
     
     global $dbsettings;
-    $users = $dbsettings["prefix"] . "_users";
+    $users = tablePrefix('users');
     $query = mysql_query("INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1',charname='$charname',charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
 
 $page = <<<END
