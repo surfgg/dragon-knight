@@ -25,7 +25,7 @@ return [
     'db' => [
         'server' => 'localhost',
         'database' => 'testdk',
-        'user' => 'splash',
+        'user' => 'testdk',
         'password' => '',
         'prefix' => ''
     ],
