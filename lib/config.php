@@ -24,8 +24,8 @@ return [
      */
     'db' => [
         'server' => 'localhost',
-        'database' => '',
-        'user' => '',
+        'database' => 'testdk',
+        'user' => 'splash',
         'password' => '',
         'prefix' => ''
     ],

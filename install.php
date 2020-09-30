@@ -76,6 +76,8 @@ function second() { // Second page - set up the database tables.
     if (isset($_POST["complete"])) { $full = true; } else { $full = false; }
     
 $query = <<<END
+DROP TABLE IF EXISTS $babble;
+
 CREATE TABLE $babble (
     id int(10) unsigned NOT NULL auto_increment,
     posttime time NOT NULL default '00:00:00',
@@ -88,6 +90,8 @@ if (dobatch($query) == 1) { echo "Babble Box table created.<br />"; } else { ech
 unset($query);
 
 $query = <<<END
+DROP TABLE IF EXISTS $control;
+
 CREATE TABLE $control (
     id tinyint(3) unsigned NOT NULL auto_increment,
     gamename varchar(50) NOT NULL default '',
@@ -125,6 +129,8 @@ if (dobatch($query) == 1) { echo "Control table populated.<br />"; } else { echo
 unset($query);
 
 $query = <<<END
+DROP TABLE IF EXISTS $drops;
+
 CREATE TABLE $drops (
     id mediumint(8) unsigned NOT NULL auto_increment,
     name varchar(30) NOT NULL default '',
@@ -178,6 +184,8 @@ unset($query);
 }
 
 $query = <<<END
+DROP TABLE IF EXISTS $forum;
+
 CREATE TABLE $forum (
   id int(11) NOT NULL auto_increment,
   postdate datetime NOT NULL default '0000-00-00 00:00:00',
@@ -194,6 +202,8 @@ if (dobatch($query) == 1) { echo "Forum table created.<br />"; } else { echo "Er
 unset($query);
 
 $query = <<<END
+DROP TABLE IF EXISTS $items;
+
 CREATE TABLE $items (
   id smallint(5) unsigned NOT NULL auto_increment,
   type tinyint(3) unsigned NOT NULL default '0',
@@ -248,6 +258,8 @@ unset($query);
 }
 
 $query = <<<END
+DROP TABLE IF EXISTS $levels;
+
 CREATE TABLE $levels (
   id smallint(5) unsigned NOT NULL auto_increment,
   1_exp mediumint(8) unsigned NOT NULL default '0',
@@ -385,6 +397,8 @@ unset($query);
 }
 
 $query = <<<END
+DROP TABLE IF EXISTS $monsters;
+
 CREATE TABLE $monsters (
   id smallint(5) unsigned NOT NULL auto_increment,
   name varchar(50) NOT NULL default '',
@@ -560,6 +574,8 @@ unset($query);
 }
 
 $query = <<<END
+DROP TABLE IF EXISTS $news;
+
 CREATE TABLE $news (
   id mediumint(8) unsigned NOT NULL auto_increment,
   postdate datetime NOT NULL default '0000-00-00 00:00:00',
@@ -577,6 +593,8 @@ if (dobatch($query) == 1) { echo "News table populated.<br />"; } else { echo "E
 unset($query);
 
 $query = <<<END
+DROP TABLE IF EXISTS $spells;
+
 CREATE TABLE $spells (
   id smallint(5) unsigned NOT NULL auto_increment,
   name varchar(30) NOT NULL default '',
@@ -616,6 +634,8 @@ unset($query);
 }
 
 $query = <<<END
+DROP TABLE IF EXISTS $towns;
+
 CREATE TABLE $towns (
   id tinyint(3) unsigned NOT NULL auto_increment,
   name varchar(30) NOT NULL default '',
@@ -647,6 +667,8 @@ unset($query);
 }
 
 $query = <<<END
+DROP TABLE IF EXISTS $users;
+
 CREATE TABLE $users (
   id smallint(5) unsigned NOT NULL auto_increment,
   username varchar(30) NOT NULL default '',
