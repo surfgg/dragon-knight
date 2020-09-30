@@ -774,7 +774,7 @@ function fourth() { // Final page: insert new user row, congratulate the person 
     if (!isset($email1)) { die("Email is required."); }
     if (!isset($email2)) { die("Verify Email is required."); }
     if ($email1 != $email2) { die("Emails don't match."); }
-    $password = md5($password1);
+    $password = password_hash($password1, PASSWORD_DEFAULT);
     
     global $dbsettings;
     $users = tablePrefix('users');
