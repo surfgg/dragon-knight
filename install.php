@@ -650,7 +650,7 @@ $query = <<<END
 CREATE TABLE $users (
   id smallint(5) unsigned NOT NULL auto_increment,
   username varchar(30) NOT NULL default '',
-  password varchar(32) NOT NULL default '',
+  password varchar(191) NOT NULL default '',
   email varchar(100) NOT NULL default '',
   verify varchar(8) NOT NULL default '0',
   charname varchar(30) NOT NULL default '',
