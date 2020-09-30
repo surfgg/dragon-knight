@@ -4,8 +4,8 @@ All the notable changes done for Dragon Knight's development will be recorded in
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Deprecated
-- 
+### Removed
+- `charname` will be entirely removed, and all instances replaced with `username`.
 
 ## v1.2.0
 ### Changed
@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The registration function now uses an array for errors rather than a counter and string.
 - The registration form now uses modern HTML5 input features, and has better code indentation.
 - The login function now displays an error at the top of the form instead of die'ing at runtime.
+- The installer will now drop existing tables when it creates new ones.
 
 ### Deprecated
 - `charname` will soon be removed, and will be replaced by `username` in all instances.
@@ -21,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Removed
 - The two "patch" scripts have been removed due to having no use.
 - The registration form no longer has a `charname` field.
+- The installer no longer uses a `charname` field, and instead sets `charname` to `username`.
 
 ## v1.1.11
 ### Added
