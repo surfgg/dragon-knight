@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## v1.2.0
 ### Changed
-- Registration now uses a [cryptographically secure method of hashing and storing passwords](https://www.php.net/manual/en/function.password-hash).
+- The register function and installer now use a [cryptographically secure method of hashing and storing passwords](https://www.php.net/manual/en/function.password-hash).
 - Logging in no longer stores the user's password in the cookie, and [checks against the password hash correctly](https://www.php.net/manual/en/function.password-verify.php).
 - The registration function now uses an array for errors rather than a counter and string.
 - The registration form now uses modern HTML5 input features, and has better code indentation.
