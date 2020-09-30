@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The two "patch" scripts have been removed due to having no use.
 - The registration form no longer has a `charname` field.
 - The installer no longer uses a `charname` field, and instead sets `charname` to `username`.
+- The `checkcookie` function no longer does a password check, as passwords are no longer stored in the cookie.
 
 ## v1.1.11
 ### Added

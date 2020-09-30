@@ -5,7 +5,7 @@ if (file_exists('install.php') && !DEBUG) {
 }
 
 require 'lib/lib.php';
-include('cookies.php');
+
 $link = opendb();
 $controlquery = doquery("SELECT * FROM {{table}} WHERE id=1 LIMIT 1", "control");
 $controlrow = mysql_fetch_array($controlquery);

@@ -153,6 +153,40 @@ function makesafe(string $string)
     return htmlentities($string, ENT_QUOTES);
 }
 
+/**
+ * Check whether or not the user's "dkgame" cookie is authorized/valid.
+ */
+function checkcookies()
+{
+    $authorized = true;
+
+    if (isset($_COOKIE["dkgame"])) {
+        /**
+         * Cookie Format
+         * {user id} {username} {password from login} {remember me}
+         */
+        $cookie = explode(' ', $_COOKIE['dkgame']);
+
+        $query = doquery("SELECT id, username FROM {{table}} WHERE username='{$cookie[1]}'", "users");
+        if (mysql_num_rows($query) != 1) { $authorized = false; }
+
+        $data = mysql_fetch_array($query);
+        if ($data['id'] != $cookie[0]) { $authorized = false; }
+        if (! password_verify($cookie[2], $data['password'])) { $authorized = false; }
+        
+        if ($authorized) {
+            $newcookie = implode(" ", $cookie);
+            if ($cookie[3] == 1) { $expiretime = time() + 31536000; } else { $expiretime = 0; }
+            setcookie("dkgame", $newcookie, $expiretime, "/", "", 0);
+            $onlinequery = doquery("UPDATE {{table}} SET onlinetime=NOW() WHERE id='$cookie[0]' LIMIT 1", "users");
+        } else {
+            setcookie('dkgame', '', time() - 10000, '', '', '');
+        }
+    }
+        
+    return $authorized;
+}
+
 function admindisplay($content, $title) { // Finalize page and output to browser.
     
     global $numqueries, $userrow, $controlrow, $starttime, $version, $build;

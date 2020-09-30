@@ -20,17 +20,20 @@ function login() {
     $error = false;
     
     if (isset($_POST['submit'])) {
-        $query = doquery("SELECT id, password FROM {{table}} WHERE username='{$_POST['username']}' LIMIT 1", "users");
+        $username = trim($_POST['username']);
+        $password = trim($_POST['password']);
+
+        $query = doquery("SELECT id, password FROM {{table}} WHERE username='{$username}' LIMIT 1", "users");
 
         if (mysql_num_rows($query) != 1) { $error = true; }
 
         $data = mysql_fetch_array($query);
 
-        if (! password_verify($_POST['password'], $data['password'])) { $error = true; }
+        if (! password_verify($password, $data['password'])) { $error = true; }
 
         if (! $error) {
             if (isset($_POST["rememberme"])) { $expiretime = time() + 31536000; $rememberme = 1; } else { $expiretime = 0; $rememberme = 0; }
-            $cookie = "{$data['id']} {$_POST['username']} {$rememberme}";
+            $cookie = "{$data['id']} {$username} {$password} {$rememberme}";
             setcookie("dkgame", $cookie, $expiretime, "/", "", 0);
             header("Location: index.php");
         }
