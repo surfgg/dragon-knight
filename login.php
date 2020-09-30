@@ -19,7 +19,7 @@ function login() {
     $link = opendb();
     $error = false;
     
-    if (isset($_POST)) {
+    if (isset($_POST['submit'])) {
         $query = doquery("SELECT id, password FROM {{table}} WHERE username='{$_POST['username']}' LIMIT 1", "users");
 
         if (mysql_num_rows($query) != 1) { $error = true; }

@@ -18,7 +18,7 @@ function register() { // Register a new account.
     $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
     $controlrow = mysql_fetch_array($controlquery);
     
-    if (isset($_POST)) {
+    if (isset($_POST['submit'])) {
         $username = trim($_POST['username']);
         $email = trim($_POST['email']);
         $emailConfirm = trim($_POST['email_confirm']);
