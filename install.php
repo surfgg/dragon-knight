@@ -123,7 +123,7 @@ if (dobatch($query) == 1) { echo "Control table created.<br />"; } else { echo "
 unset($query);
 
 $query = <<<END
-INSERT INTO $control VALUES (1, 'Dragon Knight', 250, 1, '', '', 1, '', 'Mage', 'Warrior', 'Paladin', 'Easy', '1', 'Medium', '1.2', 'Hard', '1.5', 1, 1, 1, 1, 1);
+INSERT INTO $control VALUES (1, 'Dragon Knight', 250, 1, '', '', 1, '', 'Mage', 'Warrior', 'Paladin', 'Easy', '1', 'Medium', '1.2', 'Hard', '1.5', 1, 0, 1, 1, 1);
 END;
 if (dobatch($query) == 1) { echo "Control table populated.<br />"; } else { echo "Error populating Control table."; }
 unset($query);

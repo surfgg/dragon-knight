@@ -167,7 +167,7 @@ function checkcookies()
          */
         $cookie = explode(' ', $_COOKIE['dkgame']);
 
-        $query = doquery("SELECT id, username FROM {{table}} WHERE username='{$cookie[1]}'", "users");
+        $query = doquery("SELECT * FROM {{table}} WHERE username='{$cookie[1]}'", "users");
         if (mysql_num_rows($query) != 1) { $authorized = false; }
 
         $data = mysql_fetch_array($query);
@@ -178,7 +178,8 @@ function checkcookies()
             $newcookie = implode(" ", $cookie);
             if ($cookie[3] == 1) { $expiretime = time() + 31536000; } else { $expiretime = 0; }
             setcookie("dkgame", $newcookie, $expiretime, "/", "", 0);
-            $onlinequery = doquery("UPDATE {{table}} SET onlinetime=NOW() WHERE id='$cookie[0]' LIMIT 1", "users");
+            doquery("UPDATE {{table}} SET onlinetime=NOW() WHERE id='$cookie[0]' LIMIT 1", "users");
+            return $data;
         } else {
             setcookie('dkgame', '', time() - 10000, '', '', '');
         }

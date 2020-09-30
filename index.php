@@ -12,7 +12,7 @@ $controlrow = mysql_fetch_array($controlquery);
 
 // Login (or verify) if not logged in.
 $userrow = checkcookies();
-if ($userrow == false) { 
+if (! $userrow) { 
     if (isset($_GET["do"])) {
         if ($_GET["do"] == "verify") { header("Location: users.php?do=verify"); die(); }
     }
@@ -21,7 +21,7 @@ if ($userrow == false) {
 // Close game.
 if ($controlrow["gameopen"] == 0) { display("The game is currently closed for maintanence. Please check back later.","Game Closed"); die(); }
 // Force verify if the user isn't verified yet.
-if ($controlrow["verifyemail"] == 1 && $userrow["verify"] != 1) { header("Location: users.php?do=verify"); die(); }
+if ($controlrow["verifyemail"] == 1 && $userrow["verify"] != 1) { die('not verified'); header("Location: users.php?do=verify"); die(); }
 // Block user if he/she has been banned.
 if ($userrow["authlevel"] == 2) { die("Your account has been blocked. Please try back later."); }
 
