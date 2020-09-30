@@ -18,7 +18,7 @@ function register() { // Register a new account.
     $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
     $controlrow = mysql_fetch_array($controlquery);
     
-    if (isset($_POST["submit"])) {
+    if (isset($_POST)) {
         $username = trim($_POST['username']);
         $email = trim($_POST['email']);
         $emailConfirm = trim($_POST['email_confirm']);
@@ -56,7 +56,7 @@ function register() { // Register a new account.
                 $verifycode='1';
             }
             
-            $query = doquery("INSERT INTO {{table}} SET id='',regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email1',charname='$username',charclass='$charclass',difficulty='$difficulty'", "users") or die(mysql_error());
+            $query = doquery("INSERT INTO {{table}} SET id='',regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email',charname='$username',charclass='{$_POST['charclass']}',difficulty='{$_POST['difficulty']}'", "users") or die(mysql_error());
             
             if ($controlrow["verifyemail"] == 1) {
                 if (sendregmail($email, $verifycode) == true) {
@@ -67,11 +67,13 @@ function register() { // Register a new account.
             } else {
                 $page = "Your account was created succesfully.<br /><br />You may now continue to the <a href=\"login.php?do=login\">Login Page</a> and continue playing ".$controlrow["gamename"]."!";
             }
-            
         } else {
-            
-            $page = "The following error(s) occurred when your account was being made:<br /><span style=\"color:red;\">$errorlist</span><br />Please go back and try again.";
-            
+            $errorList = '';
+            foreach ($errors as $error) {
+                $errorList .= "{$error} <br />";
+            }
+
+            $page = "The following error(s) occurred when your account was being made:<br /><span style=\"color:red;\">$errorList</span><br />Please go back and try again.";
         }
     } else {
         $page = gettemplate("register");
