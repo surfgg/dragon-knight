@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The registration form now uses modern HTML5 input features, and has better code indentation.
 - The login function now displays an error at the top of the form instead of die'ing at runtime.
 - The installer will now drop existing tables when it creates new ones.
+- Cookies now store the password used at login, and checks it against the hashed version in the database.
+- The installer will now set `verifyemail` to `false` by default, changed from `true`
+- The `checkcookies` function was moved to `lib.php`
 
 ### Deprecated
 - `charname` will soon be removed, and will be replaced by `username` in all instances.
@@ -22,8 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Removed
 - The two "patch" scripts have been removed due to having no use.
 - The registration form no longer has a `charname` field.
-- The installer no longer uses a `charname` field, and instead sets `charname` to `username`.
-- The `checkcookie` function no longer does a password check, as passwords are no longer stored in the cookie.
+- The installer no longer uses a `charname` field, and instead sets `charname` to `username`
+- The `cookies.php` file has been deleted, and the `checkcookies` function moved to `lib.php`
 
 ## v1.1.11
 ### Added
