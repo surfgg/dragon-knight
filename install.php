@@ -751,7 +751,6 @@ Now you must create an administrator account so you can use the control panel. F
 <tr><td style="vertical-align:top;">Verify Password:</td><td><input type="password" name="password2" size="30" maxlength="30" /><br /><br /><br /></td></tr>
 <tr><td style="vertical-align:top;">Email Address:</td><td><input type="text" name="email1" size="30" maxlength="100" /></td></tr>
 <tr><td style="vertical-align:top;">Verify Email:</td><td><input type="text" name="email2" size="30" maxlength="100" /><br /><br /><br /></td></tr>
-<tr><td style="vertical-align:top;">Character Name:</td><td><input type="text" name="charname" size="30" maxlength="30" /></td></tr>
 <tr><td style="vertical-align:top;">Character Class:</td><td><select name="charclass"><option value="1">Mage</option><option value="2">Warrior</option><option value="3">Paladin</option></select></td></tr>
 <tr><td style="vertical-align:top;">Difficulty:</td><td><select name="difficulty"><option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option></select></td></tr>
 <tr><td colspan="2"><input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" /></td></tr>
@@ -775,12 +774,11 @@ function fourth() { // Final page: insert new user row, congratulate the person 
     if (!isset($email1)) { die("Email is required."); }
     if (!isset($email2)) { die("Verify Email is required."); }
     if ($email1 != $email2) { die("Emails don't match."); }
-    if (!isset($charname)) { die("Character Name is required."); }
     $password = md5($password1);
     
     global $dbsettings;
     $users = tablePrefix('users');
-    $query = mysql_query("INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1',charname='$charname',charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
+    $query = mysql_query("INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1',charname='$username',charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
 
 $page = <<<END
 <html>
