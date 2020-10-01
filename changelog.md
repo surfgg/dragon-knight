@@ -4,8 +4,11 @@ All the notable changes done for Dragon Knight's development will be recorded in
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Removed
-- `charname` will be entirely removed, and all instances replaced with `username`.
+### Added
+- Added a new `app` directory to store libraries, vendor scripts and game config
+
+### Changed
+- Scripts that contain only functions have been moved into `app/Libs` and are included on an as-needed basis to cut down on root directory bloat
 
 ## v1.2.0
 ### Changed
@@ -17,7 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The installer will now drop existing tables when it creates new ones.
 - Cookies now store the password used at login, and checks it against the hashed version in the database.
 - The installer will now set `verifyemail` to `false` by default, changed from `true`
-- The `checkcookies` function was moved to `lib.php`
+- The `checkcookies` function was moved to `Lib.php`
 
 ### Deprecated
 - `charname` will soon be removed, and will be replaced by `username` in all instances.
@@ -26,7 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The two "patch" scripts have been removed due to having no use.
 - The registration form no longer has a `charname` field.
 - The installer no longer uses a `charname` field, and instead sets `charname` to `username`
-- The `cookies.php` file has been deleted, and the `checkcookies` function moved to `lib.php`
+- The `cookies.php` file has been deleted, and the `checkcookies` function moved to `Lib.php`
 
 ## v1.1.11
 ### Added
