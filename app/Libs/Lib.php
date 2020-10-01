@@ -19,7 +19,7 @@ if (DEBUG) {
  * undesirable fix for the project.
  * Credit: @dshafik https://github.com/dshafik/php7-mysql-shim
  */
-require 'lib/vendor/mysql-shim.php';
+require 'app/Vendor/mysql-shim.php';
 
 $config = require 'app/config.php';
 $starttime = getmicrotime();
