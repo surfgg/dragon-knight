@@ -1,6 +1,6 @@
 <?php // users.php :: Handles user account functions.
 
-require 'lib/lib.php';
+require 'app/Libs/lib.php';
 $link = opendb();
 
 if (isset($_GET["do"])) {

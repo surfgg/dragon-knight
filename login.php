@@ -4,7 +4,7 @@
  * This script handles logging users in and out.
  */
 
-require 'lib/lib.php';
+require 'app/Libs/lib.php';
 
 // Determine what our action is.
 $do = isset($_GET['do']) ? $_GET['do'] : 'login';
