@@ -16,7 +16,7 @@ if (! $userrow) {
     if (isset($_GET["do"])) {
         if ($_GET["do"] == "verify") { header("Location: users.php?do=verify"); die(); }
     }
-    header("Location: login.php?do=login"); die(); 
+    header("Location: users.php?do=login"); die(); 
 }
 // Close game.
 if ($controlrow["gameopen"] == 0) { display("The game is currently closed for maintanence. Please check back later.","Game Closed"); die(); }

@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - Scripts that contain only functions have been moved into `app/Libs` and are included on an as-needed basis to cut down on root directory bloat
+- Condensed the help pages into one `help.php`, moved help pages into templates in `templates/help/`
+- Release versions of the game will no longer have `DEBUG` set to true by default
+- Moved functions in `login.php` to `users.php`, changed all game links accordingly
 
 ## v1.2.0
 ### Changed
