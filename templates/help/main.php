@@ -1,5 +1,5 @@
-<!doctype html lang="en-US">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!doctype html>
+<html lang="en">
 <head>
 <title><?php echo $controlrow["gamename"]; ?> Help</title>
 <style type="text/css">
@@ -241,25 +241,25 @@ the heal spell. These may not be used during fights, however - you have to use t
 <br /><br /><hr />
 
 <h3><a name="items"></a>Spoilers: Items & Drops</h3>
-<a href="help_items.php">Click here</a> for the Items & Drops spoiler page.<br /><br />
+<a href="help.php?with=items">Click here</a> for the Items & Drops spoiler page.<br /><br />
 [ <a href="#top">Top</a> ]
 
 <br /><br /><hr />
 
 <h3><a name="monsters"></a>Spoilers: Monsters</h3>
-<a href="help_monsters.php">Click here</a> for the Monsters spoiler page.<br /><br />
+<a href="help.php?with=monsters">Click here</a> for the Monsters spoiler page.<br /><br />
 [ <a href="#top">Top</a> ]
 
 <br /><br /><hr />
 
 <h3><a name="spells"></a>Spoilers: Spells</h3>
-<a href="help_spells.php">Click here</a> for the Spells spoiler page.<br /><br />
+<a href="help.php?with=spells">Click here</a> for the Spells spoiler page.<br /><br />
 [ <a href="#top">Top</a> ]
 
 <br /><br /><hr />
 
 <h3><a name="levels"></a>Spoilers: Levels</h3>
-<a href="help_levels.php">Click here</a> for the Levels spoiler page.<br /><br />
+<a href="help.php?with=levels">Click here</a> for the Levels spoiler page.<br /><br />
 [ <a href="#top">Top</a> ]
 
 <br /><br /><hr />

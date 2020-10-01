@@ -1,5 +1,5 @@
-<!doctype html lang="en-US">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!doctype html>
+<html lang="en">
 <head>
 <title><?php echo $controlrow["gamename"]; ?> Help</title>
 <style type="text/css">
