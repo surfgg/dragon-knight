@@ -34,6 +34,3 @@ runs on a [$5 DigitalOcean server](https://www.digitalocean.com/products/droplet
 # License
 This project uses the MIT license, meaning you can do anything you'd like with it! See the
 `license` file for the full license.
-
-However, Surf also reserves copyright on all contributions we have made or will make. We still
-allow free use of our contributions.
