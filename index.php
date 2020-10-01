@@ -29,28 +29,28 @@ if (isset($_GET["do"])) {
     $do = explode(":",$_GET["do"]);
     
     // Town functions.
-    if ($do[0] == "inn") { include('towns.php'); inn(); }
-    elseif ($do[0] == "buy") { include('towns.php'); buy(); }
-    elseif ($do[0] == "buy2") { include('towns.php'); buy2($do[1]); }
-    elseif ($do[0] == "buy3") { include('towns.php'); buy3($do[1]); }
-    //elseif ($do[0] == "sell") { include('towns.php'); sell(); }
-    elseif ($do[0] == "maps") { include('towns.php'); maps(); }
-    elseif ($do[0] == "maps2") { include('towns.php'); maps2($do[1]); }
-    elseif ($do[0] == "maps3") { include('towns.php'); maps3($do[1]); }
-    elseif ($do[0] == "gotown") { include('towns.php'); travelto($do[1]); }
+    if ($do[0] == "inn") { include('app/Libs/Towns.php'); inn(); }
+    elseif ($do[0] == "buy") { include('app/Libs/Towns.php'); buy(); }
+    elseif ($do[0] == "buy2") { include('app/Libs/Towns.php'); buy2($do[1]); }
+    elseif ($do[0] == "buy3") { include('app/Libs/Towns.php'); buy3($do[1]); }
+    //elseif ($do[0] == "sell") { include('app/Libs/Towns.php'); sell(); }
+    elseif ($do[0] == "maps") { include('app/Libs/Towns.php'); maps(); }
+    elseif ($do[0] == "maps2") { include('app/Libs/Towns.php'); maps2($do[1]); }
+    elseif ($do[0] == "maps3") { include('app/Libs/Towns.php'); maps3($do[1]); }
+    elseif ($do[0] == "gotown") { include('app/Libs/Towns.php'); travelto($do[1]); }
     
     // Exploring functions.
-    elseif ($do[0] == "move") { include('explore.php'); move(); }
+    elseif ($do[0] == "move") { include('app/Libs/Towns.php'); move(); }
     
     // Fighting functions.
-    elseif ($do[0] == "fight") { include('fight.php'); fight(); }
-    elseif ($do[0] == "victory") { include('fight.php'); victory(); }
-    elseif ($do[0] == "drop") { include('fight.php'); drop(); }
-    elseif ($do[0] == "dead") { include('fight.php'); dead(); }
+    elseif ($do[0] == "fight") { include('app/Libs/Fight.php'); fight(); }
+    elseif ($do[0] == "victory") { include('app/Libs/Fight.php'); victory(); }
+    elseif ($do[0] == "drop") { include('app/Libs/Fight.php'); drop(); }
+    elseif ($do[0] == "dead") { include('app/Libs/Fight.php'); dead(); }
     
     // Misc functions.
-    elseif ($do[0] == "verify") { header("Location: users.php?do=verify"); die(); }
-    elseif ($do[0] == "spell") { include('heal.php'); healspells($do[1]); }
+    elseif ($do[0] == "verify") { header("Location: users.php?do=verify"); }
+    elseif ($do[0] == "spell") { include('app/Libs/Heal.php'); healspells($do[1]); }
     elseif ($do[0] == "showchar") { showchar(); }
     elseif ($do[0] == "onlinechar") { onlinechar($do[1]); }
     elseif ($do[0] == "showmap") { showmap(); }

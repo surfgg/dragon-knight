@@ -1,4 +1,4 @@
-<?php // heal.php :: Handles stuff from the Quick Spells menu. (Healing spells only... other spells are handled in fight.php.)
+<?php // app/Libs/Heal.php :: Handles stuff from the Quick Spells menu. (Healing spells only... other spells are handled in fight.php.)
 
 function healspells($id) {
     
@@ -29,5 +29,3 @@ function healspells($id) {
     die();
     
 }
-
-?>
