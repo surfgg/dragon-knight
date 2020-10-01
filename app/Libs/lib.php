@@ -21,7 +21,7 @@ if (DEBUG) {
  */
 require 'lib/vendor/mysql-shim.php';
 
-$config = require 'lib/config.php';
+$config = require 'app/config.php';
 $starttime = getmicrotime();
 $numqueries = 0;
 $version = config('general.version');
