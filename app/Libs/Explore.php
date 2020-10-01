@@ -23,7 +23,7 @@ function move()
     $townquery = doquery("SELECT id FROM {{table}} WHERE latitude='$latitude' AND longitude='$longitude' LIMIT 1", "towns");
     if (mysql_num_rows($townquery) > 0) {
         $townrow = mysql_fetch_array($townquery);
-        require 'app/Libs/Town.php';
+        require 'app/Libs/Towns.php';
         travelto($townrow["id"], false);
     }
     

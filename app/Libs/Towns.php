@@ -1,39 +1,36 @@
-<?php // towns.php :: Handles all actions you can do in town.
+<?php
 
-function inn() { // Staying at the inn resets all expendable stats to their max values.
-    
+/**
+ * This script contains the functions that operate town features such as
+ * the inn, shop, and more.
+ */
+
+ /**
+  * Handle either displaying the inn or resting at the inn. Resting at the inn
+  * sets all meters back to full.
+  */
+function inn()
+{
     global $userrow, $numqueries;
 
     $townquery = doquery("SELECT name,innprice FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) != 1) { display("Cheat attempt detected.<br /><br />Get a life, loser.", "Error"); }
+    if (mysql_num_rows($townquery) != 1) { display("Cheat attempt detected. <br><br> Get a life, loser.", "Error"); }
     $townrow = mysql_fetch_array($townquery);
     
-    if ($userrow["gold"] < $townrow["innprice"]) { display("You do not have enough gold to stay at this Inn tonight.<br /><br />You may return to <a href=\"index.php\">town</a>, or use the direction buttons on the left to start exploring.", "Inn"); die(); }
+    if ($userrow["gold"] < $townrow["innprice"]) { display("You do not have enough gold to stay at this Inn tonight. <br><br> You may return to <a href=\"index.php\">town</a>, or use the direction buttons on the left to start exploring.", "Inn"); die(); }
     
     if (isset($_POST["submit"])) {
-        
         $newgold = $userrow["gold"] - $townrow["innprice"];
-        $query = doquery("UPDATE {{table}} SET gold='$newgold',currenthp='".$userrow["maxhp"]."',currentmp='".$userrow["maxmp"]."',currenttp='".$userrow["maxtp"]."' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
-        $title = "Inn";
+        doquery("UPDATE {{table}} SET gold='$newgold',currenthp='".$userrow["maxhp"]."',currentmp='".$userrow["maxmp"]."',currenttp='".$userrow["maxtp"]."' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
         $page = "You wake up feeling refreshed and ready for action.<br /><br />You may return to <a href=\"index.php\">town</a>, or use the direction buttons on the left to start exploring.";
-        
     } elseif (isset($_POST["cancel"])) {
-        
-        header("Location: index.php"); die();
-         
+        header("Location: index.php");
     } else {
-        
-        $title = "Inn";
-        $page = "Resting at the inn will refill your current HP, MP, and TP to their maximum levels.<br /><br />\n";
-        $page .= "A night's sleep at this Inn will cost you <b>" . $townrow["innprice"] . " gold</b>. Is that ok?<br /><br />\n";
-        $page .= "<form action=\"index.php?do=inn\" method=\"post\">\n";
-        $page .= "<input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" />\n";
-        $page .= "</form>\n";
-        
+        $page = gettemplate('inn');
+        $page = parsetemplate($page, $townrow);
     }
     
-    display($page, $title);
-    
+    display($page, 'Inn');
 }
 
 function buy() { // Displays a list of available items for purchase.
