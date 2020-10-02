@@ -666,7 +666,6 @@ function edituser($id) {
         $errorlist = "";
         if ($email == "") { $errors++; $errorlist .= "Email is required.<br />"; }
         if ($verify == "") { $errors++; $errorlist .= "Verify is required.<br />"; }
-        if ($charname == "") { $errors++; $errorlist .= "Character Name is required.<br />"; }
         if ($authlevel == "") { $errors++; $errorlist .= "Auth Level is required.<br />"; }
         if ($latitude == "") { $errors++; $errorlist .= "Latitude is required.<br />"; }
         if ($longitude == "") { $errors++; $errorlist .= "Longitude is required.<br />"; }
@@ -756,7 +755,7 @@ function edituser($id) {
         if ($errors == 0) { 
 $updatequery = <<<END
 UPDATE {{table}} SET
-email="$email", verify="$verify", charname="$charname", authlevel="$authlevel", latitude="$latitude",
+email="$email", verify="$verify", authlevel="$authlevel", latitude="$latitude",
 longitude="$longitude", difficulty="$difficulty", charclass="$charclass", currentaction="$currentaction", currentfight="$currentfight",
 currentmonster="$currentmonster", currentmonsterhp="$currentmonsterhp", currentmonstersleep="$currentmonstersleep", currentmonsterimmune="$currentmonsterimmune", currentuberdamage="$currentuberdamage",
 currentuberdefense="$currentuberdefense", currenthp="$currenthp", currentmp="$currentmp", currenttp="$currenttp", maxhp="$maxhp",
@@ -793,7 +792,6 @@ $page = <<<END
 <tr><td width="20%">Username:</td><td>{{username}}</td></tr>
 <tr><td width="20%">Email:</td><td><input type="text" name="email" size="30" maxlength="100" value="{{email}}" /></td></tr>
 <tr><td width="20%">Verify:</td><td><input type="text" name="verify" size="30" maxlength="8" value="{{verify}}" /></td></tr>
-<tr><td width="20%">Character Name:</td><td><input type="text" name="charname" size="30" maxlength="30" value="{{charname}}" /></td></tr>
 <tr><td width="20%">Register Date:</td><td>{{regdate}}</td></tr>
 <tr><td width="20%">Last Online:</td><td>{{onlinetime}}</td></tr>
 <tr><td width="20%">Auth Level:</td><td><select name="authlevel"><option value="0" {{auth0select}}>User</option><option value="1" {{auth1select}}>Admin</option><option value="2" {{auth2select}}>Blocked</option></select><br /><span class="small">Set to "Blocked" to temporarily (or permanently) ban a user.</span></td></tr>

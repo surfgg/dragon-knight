@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Removed
 - Removed all old XML validation content. Pages are now only made with HTML5 compliant tags.
+- `charname` has been completely removed from the game - the installer has been updated to not add that column in the database. All relevant bits of code have been updated as well.
 
 ## v1.2.0 - 9/30/2020
 ### Changed

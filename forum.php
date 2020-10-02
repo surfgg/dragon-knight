@@ -76,7 +76,7 @@ function reply() {
 
     global $userrow;
 	extract($_POST);
-	$query = doquery("INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='$parent',replies='0',title='$title',content='$content'", "forum");
+	$query = doquery("INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["username"]."',parent='$parent',replies='0',title='$title',content='$content'", "forum");
 	$query2 = doquery("UPDATE {{table}} SET newpostdate=NOW(),replies=replies+1 WHERE id='$parent' LIMIT 1", "forum");
 	header("Location: forum.php?do=thread:$parent:0");
 	die();
@@ -89,7 +89,7 @@ function newthread() {
     
     if (isset($_POST["submit"])) {
         extract($_POST);
-        $query = doquery("INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["charname"]."',parent='0',replies='0',title='$title',content='$content'", "forum");
+        $query = doquery("INSERT INTO {{table}} SET id='',postdate=NOW(),newpostdate=NOW(),author='".$userrow["username"]."',parent='0',replies='0',title='$title',content='$content'", "forum");
         header("Location: forum.php");
         die();
     }

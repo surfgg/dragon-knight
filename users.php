@@ -92,7 +92,7 @@ function register()
                 $verifycode='1';
             }
             
-            $query = doquery("INSERT INTO {{table}} SET id='',regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email',charname='$username',charclass='{$_POST['charclass']}',difficulty='{$_POST['difficulty']}'", "users") or die(mysql_error());
+            $query = doquery("INSERT INTO {{table}} SET id='',regdate=NOW(),verify='$verifycode',username='$username',password='$password',email='$email', charclass='{$_POST['charclass']}',difficulty='{$_POST['difficulty']}'", "users") or die(mysql_error());
             
             if ($controlrow["verifyemail"] == 1) {
                 if (sendregmail($email, $verifycode) == true) {

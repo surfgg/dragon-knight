@@ -675,7 +675,6 @@ CREATE TABLE $users (
   password varchar(191) NOT NULL default '',
   email varchar(100) NOT NULL default '',
   verify varchar(8) NOT NULL default '0',
-  charname varchar(30) NOT NULL default '',
   regdate datetime NOT NULL default '0000-00-00 00:00:00',
   onlinetime datetime NOT NULL default '0000-00-00 00:00:00',
   authlevel tinyint(3) unsigned NOT NULL default '0',
@@ -778,7 +777,7 @@ function fourth() { // Final page: insert new user row, congratulate the person 
     
     global $dbsettings;
     $users = tablePrefix('users');
-    $query = mysql_query("INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1',charname='$username',charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
+    $query = mysql_query("INSERT INTO $users SET id='1',username='$username',password='$password',email='$email1',verify='1', charclass='$charclass',regdate=NOW(),onlinetime=NOW(),authlevel='1'") or die(mysql_error());
 
 $page = <<<END
 <html>
