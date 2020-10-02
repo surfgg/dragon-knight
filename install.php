@@ -1,7 +1,7 @@
 <?php // install.php :: creates/populates database tables on a new installation.
 
 include('config.php');
-require 'app/Libs/Lib.php';
+require 'app/Libs/Helpers.php';
 $link = opendb();
 $start = getmicrotime();
 

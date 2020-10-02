@@ -1,6 +1,6 @@
 <?php // admin.php :: primary administration script.
 
-require 'app/Libs/Lib.php';
+require 'app/Libs/Helpers.php';
 
 $link = opendb();
 $userrow = checkcookies();

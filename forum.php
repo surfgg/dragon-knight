@@ -1,6 +1,6 @@
 <?php // forum.php :: Internal forums script for the game.
 
-require 'app/Libs/Lib.php';
+require 'app/Libs/Helpers.php';
 
 $link = opendb();
 $userrow = checkcookies();

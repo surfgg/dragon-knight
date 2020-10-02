@@ -2,9 +2,9 @@
 
 function healspells($id) {
     
-    global $userrow;
+    global $user;
     
-    $userspells = explode(",",$userrow["spells"]);
+    $userspells = explode(",",$user["spells"]);
     $spellquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
     $spellrow = mysql_fetch_array($spellquery);
     
@@ -15,15 +15,15 @@ function healspells($id) {
     }
     if ($spell != true) { display("You have not yet learned this spell. Please go back and try again.", "Error"); die(); }
     if ($spellrow["type"] != 1) { display("This is not a healing spell. Please go back and try again.", "Error"); die(); }
-    if ($userrow["currentmp"] < $spellrow["mp"]) { display("You do not have enough Magic Points to cast this spell. Please go back and try again.", "Error"); die(); }
-    if ($userrow["currentaction"] == "Fighting") { display("You cannot use the Quick Spells list during a fight. Please go back and select the Healing Spell you wish to use from the Spells box on the main fighting screen to continue.", "Error"); die(); }
-    if ($userrow["currenthp"] == $userrow["maxhp"]) { display("Your Hit Points are already full. You don't need to use a Healing spell now.", "Error"); die(); }
+    if ($user["currentmp"] < $spellrow["mp"]) { display("You do not have enough Magic Points to cast this spell. Please go back and try again.", "Error"); die(); }
+    if ($user["currentaction"] == "Fighting") { display("You cannot use the Quick Spells list during a fight. Please go back and select the Healing Spell you wish to use from the Spells box on the main fighting screen to continue.", "Error"); die(); }
+    if ($user["currenthp"] == $user["maxhp"]) { display("Your Hit Points are already full. You don't need to use a Healing spell now.", "Error"); die(); }
     
-    $newhp = $userrow["currenthp"] + $spellrow["attribute"];
-    if ($userrow["maxhp"] < $newhp) { $spellrow["attribute"] = $userrow["maxhp"] - $userrow["currenthp"]; $newhp = $userrow["currenthp"] + $spellrow["attribute"]; }
-    $newmp = $userrow["currentmp"] - $spellrow["mp"];
+    $newhp = $user["currenthp"] + $spellrow["attribute"];
+    if ($user["maxhp"] < $newhp) { $spellrow["attribute"] = $user["maxhp"] - $user["currenthp"]; $newhp = $user["currenthp"] + $spellrow["attribute"]; }
+    $newmp = $user["currentmp"] - $spellrow["mp"];
     
-    $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp', currentmp='$newmp' WHERE id='".$userrow["id"]."' LIMIT 1", "users");
+    $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp', currentmp='$newmp' WHERE id='".$user["id"]."' LIMIT 1", "users");
     
     display("You have cast the ".$spellrow["name"]." spell, and gained ".$spellrow["attribute"]." Hit Points. You can now continue <a href=\"index.php\">exploring</a>.", "Healing Spell");
     die();

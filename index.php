@@ -4,288 +4,276 @@ if (file_exists('install.php') && !DEBUG) {
     die('Please delete <b>install.php</b> from your Dragon Knight directory before continuing.'); 
 }
 
-require 'app/Libs/Lib.php';
+require 'app/Libs/Helpers.php';
+require 'app/Libs/Explore.php';
+require 'app/Libs/Towns.php';
+require 'app/Libs/Fight.php';
 
 $link = opendb();
-$controlquery = doquery("SELECT * FROM {{table}} WHERE id=1 LIMIT 1", "control");
-$controlrow = mysql_fetch_array($controlquery);
+$testLink = openLink();
+$control = getControl($testLink);
 
-// Login (or verify) if not logged in.
-$userrow = checkcookies();
-if (! $userrow) { 
-    if (isset($_GET["do"])) {
-        if ($_GET["do"] == "verify") { header("Location: users.php?do=verify"); die(); }
-    }
-    header("Location: users.php?do=login"); die(); 
-}
-// Close game.
-if ($controlrow["gameopen"] == 0) { display("The game is currently closed for maintanence. Please check back later.","Game Closed"); die(); }
+// If the user isn't logged in, redirect to the login page
+if (! checkcookies($testLink)) { redirect('users.php?do=login'); }
+
+// Get the user's data based on the cookie.
+$user = getUserFromCookie($testLink);
+
 // Force verify if the user isn't verified yet.
-if ($controlrow["verifyemail"] == 1 && $userrow["verify"] != 1) { die('not verified'); header("Location: users.php?do=verify"); die(); }
-// Block user if he/she has been banned.
-if ($userrow["authlevel"] == 2) { die("Your account has been blocked. Please try back later."); }
+if ($control['verifyemail'] == 1 && $user["verify"] != 1) { redirect('users.php?do=verify'); }
 
-if (isset($_GET["do"])) {
-    $do = explode(":",$_GET["do"]);
-    
-    // Town functions.
-    if ($do[0] == "inn") { include('app/Libs/Towns.php'); inn(); }
-    elseif ($do[0] == "buy") { include('app/Libs/Towns.php'); buy(); }
-    elseif ($do[0] == "buy2") { include('app/Libs/Towns.php'); buy2($do[1]); }
-    elseif ($do[0] == "buy3") { include('app/Libs/Towns.php'); buy3($do[1]); }
-    //elseif ($do[0] == "sell") { include('app/Libs/Towns.php'); sell(); }
-    elseif ($do[0] == "maps") { include('app/Libs/Towns.php'); maps(); }
-    elseif ($do[0] == "maps2") { include('app/Libs/Towns.php'); maps2($do[1]); }
-    elseif ($do[0] == "maps3") { include('app/Libs/Towns.php'); maps3($do[1]); }
-    elseif ($do[0] == "gotown") { include('app/Libs/Towns.php'); travelto($do[1]); }
-    
-    // Exploring functions.
-    elseif ($do[0] == "move") { include('app/Libs/Towns.php'); move(); }
-    
-    // Fighting functions.
-    elseif ($do[0] == "fight") { include('app/Libs/Fight.php'); fight(); }
-    elseif ($do[0] == "victory") { include('app/Libs/Fight.php'); victory(); }
-    elseif ($do[0] == "drop") { include('app/Libs/Fight.php'); drop(); }
-    elseif ($do[0] == "dead") { include('app/Libs/Fight.php'); dead(); }
-    
-    // Misc functions.
-    elseif ($do[0] == "verify") { header("Location: users.php?do=verify"); }
-    elseif ($do[0] == "spell") { include('app/Libs/Heal.php'); healspells($do[1]); }
-    elseif ($do[0] == "showchar") { showchar(); }
-    elseif ($do[0] == "onlinechar") { onlinechar($do[1]); }
-    elseif ($do[0] == "showmap") { showmap(); }
-    elseif ($do[0] == "babblebox") { babblebox(); }
-    elseif ($do[0] == "ninja") { ninja(); }
-    
-} else { donothing(); }
+// Kill the script if the user has been banned.
+if ($user["authlevel"] == 2) { die('You\'ve been banned. Try again later.'); }
 
-function donothing() {
-    
-    global $userrow;
+// Get the requested action, or default to the user's current action.
+$do = isset($_GET['do']) ? explode(':', $_GET['do']) : 'currentAction';
 
-    if ($userrow["currentaction"] == "In Town") {
-        $page = dotown();
-        $title = "In Town";
-    } elseif ($userrow["currentaction"] == "Exploring") {
-        $page = doexplore();
-        $title = "Exploring";
-    } elseif ($userrow["currentaction"] == "Fighting")  {
-        $page = dofight();
-        $title = "Fighting";
-    }
+// If the game is closed, set our action to the correct endpoint.
+if ($control['gameopen'] == 0) { $do = 'gameClosed'; }
+
+// Town Functions
+if ($do[0] == "inn") { inn(); }
+elseif ($do[0] == "buy") { buy(); }
+elseif ($do[0] == "buy2") { buy2($do[1]); }
+elseif ($do[0] == "buy3") { buy3($do[1]); }
+//elseif ($do[0] == "sell") { sell(); }
+elseif ($do[0] == "maps") { maps(); }
+elseif ($do[0] == "maps2") { maps2($do[1]); }
+elseif ($do[0] == "maps3") { maps3($do[1]); }
+elseif ($do[0] == "gotown") { travelto($do[1]); }
+
+// Exploration functions
+elseif ($do[0] == "move") { move(); }
+
+// Fight functions
+elseif ($do[0] == "fight") { fight(); }
+elseif ($do[0] == "victory") { victory(); }
+elseif ($do[0] == "drop") { drop(); }
+elseif ($do[0] == "dead") { dead(); }
+
+// Other functions
+elseif ($do[0] == "verify") { header("Location: users.php?do=verify"); }
+elseif ($do[0] == "spell") { include('app/Libs/Heal.php'); healspells($do[1]); }
+elseif ($do[0] == "showchar") { showchar(); }
+elseif ($do[0] == "onlinechar") { onlinechar($do[1]); }
+elseif ($do[0] == "showmap") { showmap(); }
+elseif ($do[0] == "babblebox") { babblebox(); }
+elseif ($do[0] == "ninja") { ninja(); }
+elseif ($do == 'gameClosed') { gameClosed(); }
+
+// Default function
+else { doCurrentAction(); }
+
+/**
+ * This function determines what action to take if no action was requested.
+ */
+function doCurrentAction()
+{
+    global $user;
+    $currently = $user['currentaction'];
+
+    if ($currently == 'In Town') { $page = displayTown(); }
+    elseif ($currently == "Exploring") { $page = displayExplore(); }
+    elseif ($currently == "Fighting") { redirect('index.php?do=fight'); }
+    else { $page = 'There was an error in the current action.'; }
     
-    display($page, $title);
-    
+    display($page, $currently);
 }
 
-function dotown() { // Spit out the main town page.
+/**
+ * Generate the town page.
+ */
+function displayTown()
+{
+    global $user, $control, $testLink, $queryCount;
+
+    $townrow = getTown($user['latitude'], $user['longitude'], $testLink);
     
-    global $userrow, $controlrow, $numqueries;
+    // Generate the news box
+    if ($control["shownews"] == 1) { 
+        $news = query('select * from {{ table }} order by id desc limit 1', 'news', $testLink);
+        $news = $news->fetch();
+        
+        $townrow['news'] = "<table width=\"95%\"><tr><td class=\"title\">Latest News</td></tr><tr><td>\n";
+        $townrow['news'] .= "<span class=\"light\">[".prettydate($news["postdate"])."]</span><br />".nl2br($news["content"]);
+        $townrow['news'] .= "</td></tr></table>\n";
+    } else {
+        $townrow['news'] = '';
+    }
     
-    $townquery = doquery("SELECT * FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) == 0) { display("There is an error with your user account, or with the town data. Please try again.","Error"); }
-    $townrow = mysql_fetch_array($townquery);
-    
-    // News box. Grab latest news entry and display it. Something a little more graceful coming soon maybe.
-    if ($controlrow["shownews"] == 1) { 
-        $newsquery = doquery("SELECT * FROM {{table}} ORDER BY id DESC LIMIT 1", "news");
-        $newsrow = mysql_fetch_array($newsquery);
-        $townrow["news"] = "<table width=\"95%\"><tr><td class=\"title\">Latest News</td></tr><tr><td>\n";
-        $townrow["news"] .= "<span class=\"light\">[".prettydate($newsrow["postdate"])."]</span><br />".nl2br($newsrow["content"]);
-        $townrow["news"] .= "</td></tr></table>\n";
-    } else { $townrow["news"] = ""; }
-    
-    // Who's Online. Currently just members. Guests maybe later.
-    if ($controlrow["showonline"] == 1) {
-        $onlinequery = doquery("SELECT * FROM {{table}} WHERE UNIX_TIMESTAMP(onlinetime) >= '".(time()-600)."' ORDER BY charname", "users");
+    // Who's online? Shows users who've logged in within the last 10 minutes
+    if ($control["showonline"] == 1) {
+        $online = query('select id, username from {{ table }} where onlinetime >= date_sub(now(), interval 10 minute) ORDER BY username', 'users', $testLink);
+        $online = $online->fetchAll();
+
         $townrow["whosonline"] = "<table width=\"95%\"><tr><td class=\"title\">Who's Online</td></tr><tr><td>\n";
-        $townrow["whosonline"] .= "There are <b>" . mysql_num_rows($onlinequery) . "</b> user(s) online within the last 10 minutes: ";
-        while ($onlinerow = mysql_fetch_array($onlinequery)) { $townrow["whosonline"] .= "<a href=\"index.php?do=onlinechar:".$onlinerow["id"]."\">".$onlinerow["charname"]."</a>" . ", "; }
+        $townrow["whosonline"] .= "There are <b>" . count($online) . "</b> user(s) online within the last 10 minutes: ";
+
+        foreach ($online as $user) {
+            $townrow["whosonline"] .= "<a href=\"index.php?do=onlinechar:{$user['id']}\">{$user['username']}</a>, ";
+        }
+
         $townrow["whosonline"] = rtrim($townrow["whosonline"], ", ");
         $townrow["whosonline"] .= "</td></tr></table>\n";
-    } else { $townrow["whosonline"] = ""; }
+    } else {
+        $townrow["whosonline"] = "";
+    }
     
-    if ($controlrow["showbabble"] == 1) {
+    // The Babblebox currently works through an IFrame. I'd like to change this soon.
+    if ($control["showbabble"] == 1) {
         $townrow["babblebox"] = "<table width=\"95%\"><tr><td class=\"title\">Babble Box</td></tr><tr><td>\n";
         $townrow["babblebox"] .= "<iframe src=\"index.php?do=babblebox\" name=\"sbox\" width=\"100%\" height=\"250\" frameborder=\"0\" id=\"bbox\">Your browser does not support inline frames! The Babble Box will not be available until you upgrade to a newer <a href=\"http://www.mozilla.org\" target=\"_new\">browser</a>.</iframe>";
         $townrow["babblebox"] .= "</td></tr></table>\n";
-    } else { $townrow["babblebox"] = ""; }
+    } else {
+        $townrow["babblebox"] = "";
+    }
     
     $page = gettemplate("towns");
     $page = parsetemplate($page, $townrow);
     
     return $page;
-    
 }
 
-function doexplore() { // Just spit out a blank exploring page.
+function showchar()
+{
     
-    // Exploring without a GET string is normally when they first log in, or when they've just finished fighting.
-    
-$page = <<<END
-<table width="100%">
-<tr><td class="title"><img src="images/title_exploring.gif" alt="Exploring" /></td></tr>
-<tr><td>
-You are exploring the map, and nothing has happened. Continue exploring using the direction buttons or the Travel To menus.
-</td></tr>
-</table>
-END;
-
-    return $page;
-        
-}
-
-function dofight() { // Redirect to fighting.
-    
-    header("Location: index.php?do=fight");
-    
-}
-
-function showchar() {
-    
-    global $userrow, $controlrow;
+    global $user, $control, $testLink;
     
     // Format various userrow stuffs.
-    $userrow["experience"] = number_format($userrow["experience"]);
-    $userrow["gold"] = number_format($userrow["gold"]);
-    if ($userrow["expbonus"] > 0) { 
-        $userrow["plusexp"] = "<span class=\"light\">(+".$userrow["expbonus"]."%)</span>"; 
-    } elseif ($userrow["expbonus"] < 0) {
-        $userrow["plusexp"] = "<span class=\"light\">(".$userrow["expbonus"]."%)</span>";
-    } else { $userrow["plusexp"] = ""; }
-    if ($userrow["goldbonus"] > 0) { 
-        $userrow["plusgold"] = "<span class=\"light\">(+".$userrow["goldbonus"]."%)</span>"; 
-    } elseif ($userrow["goldbonus"] < 0) { 
-        $userrow["plusgold"] = "<span class=\"light\">(".$userrow["goldbonus"]."%)</span>";
-    } else { $userrow["plusgold"] = ""; }
+    $user["experience"] = number_format($user["experience"]);
+    $user["gold"] = number_format($user["gold"]);
+    if ($user["expbonus"] > 0) { 
+        $user["plusexp"] = "<span class=\"light\">(+".$user["expbonus"]."%)</span>"; 
+    } elseif ($user["expbonus"] < 0) {
+        $user["plusexp"] = "<span class=\"light\">(".$user["expbonus"]."%)</span>";
+    } else { $user["plusexp"] = ""; }
+    if ($user["goldbonus"] > 0) { 
+        $user["plusgold"] = "<span class=\"light\">(+".$user["goldbonus"]."%)</span>"; 
+    } elseif ($user["goldbonus"] < 0) { 
+        $user["plusgold"] = "<span class=\"light\">(".$user["goldbonus"]."%)</span>";
+    } else { $user["plusgold"] = ""; }
     
-    $levelquery = doquery("SELECT ". $userrow["charclass"]."_exp FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
-    $levelrow = mysql_fetch_array($levelquery);
-    if ($userrow["level"] < 99) { $userrow["nextlevel"] = number_format($levelrow[$userrow["charclass"]."_exp"]); } else { $userrow["nextlevel"] = "<span class=\"light\">None</span>"; }
+    $exp = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $testLink);
+    $levelrow = execute($exp, [$user['level'] + 1])->fetch();
+    if ($user["level"] < 99) { $user["nextlevel"] = number_format($levelrow[$user["charclass"]."_exp"]); } else { $user["nextlevel"] = "<span class=\"light\">None</span>"; }
 
-    if ($userrow["charclass"] == 1) { $userrow["charclass"] = $controlrow["class1name"]; }
-    elseif ($userrow["charclass"] == 2) { $userrow["charclass"] = $controlrow["class2name"]; }
-    elseif ($userrow["charclass"] == 3) { $userrow["charclass"] = $controlrow["class3name"]; }
+    if ($user["charclass"] == 1) { $user["charclass"] = $control["class1name"]; }
+    elseif ($user["charclass"] == 2) { $user["charclass"] = $control["class2name"]; }
+    elseif ($user["charclass"] == 3) { $user["charclass"] = $control["class3name"]; }
     
-    if ($userrow["difficulty"] == 1) { $userrow["difficulty"] = $controlrow["diff1name"]; }
-    elseif ($userrow["difficulty"] == 2) { $userrow["difficulty"] = $controlrow["diff2name"]; }
-    elseif ($userrow["difficulty"] == 3) { $userrow["difficulty"] = $controlrow["diff3name"]; }
+    if ($user["difficulty"] == 1) { $user["difficulty"] = $control["diff1name"]; }
+    elseif ($user["difficulty"] == 2) { $user["difficulty"] = $control["diff2name"]; }
+    elseif ($user["difficulty"] == 3) { $user["difficulty"] = $control["diff3name"]; }
     
-    $spellquery = doquery("SELECT id,name FROM {{table}}","spells");
-    $userspells = explode(",",$userrow["spells"]);
-    $userrow["magiclist"] = "";
-    while ($spellrow = mysql_fetch_array($spellquery)) {
+    $spells = query('select id, name from {{ table }}', 'spells', $testLink);
+    $userspells = explode(",", $user["spells"]);
+    $user["magiclist"] = "";
+    foreach ($spells->fetchAll() as $spellrow) {
         $spell = false;
         foreach($userspells as $a => $b) {
             if ($b == $spellrow["id"]) { $spell = true; }
         }
         if ($spell == true) {
-            $userrow["magiclist"] .= $spellrow["name"]."<br />";
+            $user["magiclist"] .= $spellrow["name"]."<br />";
         }
     }
-    if ($userrow["magiclist"] == "") { $userrow["magiclist"] = "None"; }
+    if ($user["magiclist"] == "") { $user["magiclist"] = "None"; }
     
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-    . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
-    . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    $xml = "<!DOCTYPE html>\n"
+    . "<html lang=\"en\">\n";
     
     $charsheet = gettemplate("showchar");
     $page = $xml . gettemplate("minimal");
-    $array = array("content"=>parsetemplate($charsheet, $userrow), "title"=>"Character Information");
+    $array = ["content" => parsetemplate($charsheet, $user), "title" => "Character Information"];
     echo parsetemplate($page, $array);
-    die();
-    
 }
 
-function onlinechar($id) {
-    
-    global $controlrow;
-    $userquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "users");
-    if (mysql_num_rows($userquery) == 1) { $userrow = mysql_fetch_array($userquery); } else { display("No such user.", "Error"); }
+function onlinechar($id)
+{
+    global $control, $testLink;
+
+    $user = getUserFromId($id, $testLink);
     
     // Format various userrow stuffs.
-    $userrow["experience"] = number_format($userrow["experience"]);
-    $userrow["gold"] = number_format($userrow["gold"]);
-    if ($userrow["expbonus"] > 0) { 
-        $userrow["plusexp"] = "<span class=\"light\">(+".$userrow["expbonus"]."%)</span>"; 
-    } elseif ($userrow["expbonus"] < 0) {
-        $userrow["plusexp"] = "<span class=\"light\">(".$userrow["expbonus"]."%)</span>";
-    } else { $userrow["plusexp"] = ""; }
-    if ($userrow["goldbonus"] > 0) { 
-        $userrow["plusgold"] = "<span class=\"light\">(+".$userrow["goldbonus"]."%)</span>"; 
-    } elseif ($userrow["goldbonus"] < 0) { 
-        $userrow["plusgold"] = "<span class=\"light\">(".$userrow["goldbonus"]."%)</span>";
-    } else { $userrow["plusgold"] = ""; }
+    $user["experience"] = number_format($user["experience"]);
+    $user["gold"] = number_format($user["gold"]);
+    if ($user["expbonus"] > 0) { 
+        $user["plusexp"] = "<span class=\"light\">(+".$user["expbonus"]."%)</span>"; 
+    } elseif ($user["expbonus"] < 0) {
+        $user["plusexp"] = "<span class=\"light\">(".$user["expbonus"]."%)</span>";
+    } else { $user["plusexp"] = ""; }
+    if ($user["goldbonus"] > 0) { 
+        $user["plusgold"] = "<span class=\"light\">(+".$user["goldbonus"]."%)</span>"; 
+    } elseif ($user["goldbonus"] < 0) { 
+        $user["plusgold"] = "<span class=\"light\">(".$user["goldbonus"]."%)</span>";
+    } else { $user["plusgold"] = ""; }
     
-    $levelquery = doquery("SELECT ". $userrow["charclass"]."_exp FROM {{table}} WHERE id='".($userrow["level"]+1)."' LIMIT 1", "levels");
-    $levelrow = mysql_fetch_array($levelquery);
-    $userrow["nextlevel"] = number_format($levelrow[$userrow["charclass"]."_exp"]);
+    $exp = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $testLink);
+    $levelrow = execute($exp, [$user['level'] + 1])->fetch();
+    $user["nextlevel"] = number_format($levelrow[$user["charclass"]."_exp"]);
 
-    if ($userrow["charclass"] == 1) { $userrow["charclass"] = $controlrow["class1name"]; }
-    elseif ($userrow["charclass"] == 2) { $userrow["charclass"] = $controlrow["class2name"]; }
-    elseif ($userrow["charclass"] == 3) { $userrow["charclass"] = $controlrow["class3name"]; }
+    if ($user["charclass"] == 1) { $user["charclass"] = $control["class1name"]; }
+    elseif ($user["charclass"] == 2) { $user["charclass"] = $control["class2name"]; }
+    elseif ($user["charclass"] == 3) { $user["charclass"] = $control["class3name"]; }
     
-    if ($userrow["difficulty"] == 1) { $userrow["difficulty"] = $controlrow["diff1name"]; }
-    elseif ($userrow["difficulty"] == 2) { $userrow["difficulty"] = $controlrow["diff2name"]; }
-    elseif ($userrow["difficulty"] == 3) { $userrow["difficulty"] = $controlrow["diff3name"]; }
+    if ($user["difficulty"] == 1) { $user["difficulty"] = $control["diff1name"]; }
+    elseif ($user["difficulty"] == 2) { $user["difficulty"] = $control["diff2name"]; }
+    elseif ($user["difficulty"] == 3) { $user["difficulty"] = $control["diff3name"]; }
     
     $charsheet = gettemplate("onlinechar");
-    $page = parsetemplate($charsheet, $userrow);
+    $page = parsetemplate($charsheet, $user);
     display($page, "Character Information");
-    
 }
 
-function showmap() {
-    
-    global $userrow; 
-    
+function showmap()
+{
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-    . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
-    . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    $xml = "<!DOCTYPE html>\n"
+    . "<html lang=\"en\">\n";
     
     $page = $xml . gettemplate("minimal");
     $array = array("content"=>"<center><img src=\"images/map.gif\" alt=\"Map\" /></center>", "title"=>"Map");
     echo parsetemplate($page, $array);
-    die();
-    
 }
 
-function babblebox() {
+function babblebox()
+{
+    global $user, $testLink;
     
-    global $userrow;
-    
-    if (isset($_POST["babble"])) {
-        $safecontent = makesafe($_POST["babble"]);
-        if ($safecontent == "" || $safecontent == " ") { //blank post. do nothing.
-        } else { $insert = doquery("INSERT INTO {{table}} SET id='',posttime=NOW(),author='".$userrow["charname"]."',babble='$safecontent'", "babble"); }
-        header("Location: index.php?do=babblebox");
-        die();
+    if (isset($_POST['babble'])) {
+        if (! empty($_POST['babble'])) {
+            $insert = prepare('insert into {{ table }} set posttime=now(), author=?, babble=?', 'babble', $testLink);
+            execute($insert, [$user['username'], $_POST['babble']]);
+        }
+
+        redirect('index.php?do=babblebox');
     }
     
-    $babblebox = array("content"=>"");
+    $babblebox = ['content' => ''];
     $bg = 1;
-    $babblequery = doquery("SELECT * FROM {{table}} ORDER BY id DESC LIMIT 20", "babble");
-    while ($babblerow = mysql_fetch_array($babblequery)) {
-        if ($bg == 1) { $new = "<div style=\"width:98%; background-color:#eeeeee;\">[<b>".$babblerow["author"]."</b>] ".$babblerow["babble"]."</div>\n"; $bg = 2; }
-        else { $new = "<div style=\"width:98%; background-color:#ffffff;\">[<b>".$babblerow["author"]."</b>] ".stripslashes($babblerow["babble"])."</div>\n"; $bg = 1; } 
+    $babbles = query('select * from {{ table }} order by id desc limit 20', 'babble');
+    foreach ($babbles->fetchAll() as $babble) {
+        $message = safe($babble['babble']);
+        if ($bg == 1) { $new = "<div style=\"width:98%; background-color:#eeeeee;\">[<b>{$babble['author']}</b>] {$message}</div>\n"; $bg = 2; }
+        else { $new = "<div style=\"width:98%; background-color:#ffffff;\">[<b>{$babble['author']}</b>] {$message}</div>\n"; $bg = 1; }
         $babblebox["content"] = $new . $babblebox["content"];
     }
     $babblebox["content"] .= "<center><form action=\"index.php?do=babblebox\" method=\"post\"><input type=\"text\" name=\"babble\" size=\"15\" maxlength=\"120\" /><br /><input type=\"submit\" name=\"submit\" value=\"Babble\" /> <input type=\"reset\" name=\"reset\" value=\"Clear\" /></form></center>";
     
     // Make page tags for XHTML validation.
-    $xml = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n"
-    . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"DTD/xhtml1-transitional.dtd\">\n"
-    . "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n";
+    $xml = "<!DOCTYPE html>\n"
+    . "<html lang=\"en\">\n";
     $page = $xml . gettemplate("babblebox");
     echo parsetemplate($page, $babblebox);
-    die();
-
 }
 
-function ninja() {
-    header("Location: http://www.se7enet.com/img/shirtninja.jpg");
+function gameClosed()
+{
+    display('The game is currently closed for maintanence. Please check back later.', 'Game Closed');
 }
 
-?>
+function ninja()
+{
+    redirect('http://www.se7enet.com/img/shirtninja.jpg');
+}

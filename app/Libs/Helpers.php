@@ -21,9 +21,16 @@ if (DEBUG) {
  */
 require 'app/Vendor/mysql-shim.php';
 
+/**
+ * On every page we use the Helpers library, we'll likely use the Database
+ * library. As such, we'll require it here. We'll also open a link to the
+ * database, since almost every page requires it.
+ */
+require 'app/Libs/Database.php';
+
 $config = require 'app/config.php';
 $starttime = getmicrotime();
-$numqueries = 0;
+$queryCount = 0;
 $version = config('general.version');
 $build = config('general.build');
 
@@ -58,6 +65,44 @@ function config(string $key = '')
 }
 
 /**
+ * This function takes whatever variable is passed to it, including
+ * arrays, and spits it out as a preformatted var_dump. It then
+ * kills the script. Great for debugging!
+ */
+function dd($variable = '', bool $die = true) {
+    echo '<pre>';
+    echo var_export($variable, true);
+    echo '</pre>';
+    if ($die) { die(); }
+}
+
+/**
+ * Redirect a user to a given location.
+ */
+function redirect(string $location)
+{
+    header("Location: {$location}");
+}
+
+/**
+ * Increments the query count by 1.
+ */
+function incrementQueryCount()
+{
+    global $queryCount;
+    $queryCount++;
+}
+
+/**
+ * Gets the current query count.
+ */
+function getQueryCount()
+{
+    global $queryCount;
+    return $queryCount;
+}
+
+/**
  * This streamlines getting the prefixed table names for
  * the database. Will eventually be moved into a database
  * class.
@@ -80,9 +125,9 @@ function opendb()
 
 function doquery($query, $table) { // Something of a tiny little database abstraction layer.
     
-    global $numqueries;
+    global $queryCount;
     $sqlquery = mysql_query(str_replace("{{table}}", tablePrefix($table), $query)) or die(mysql_error());
-    $numqueries++;
+    $queryCount++;
     return $sqlquery;
 
 }
@@ -98,6 +143,37 @@ function gettemplate(string $template) {
     }
 
     return file_get_contents($path);
+}
+
+/**
+ * Get the control row from the database.
+ */
+function getControl($link = null)
+{
+    $link = openLinkIfNull($link);
+    return query('select * from {{ table }} where id=1', 'control', $link)->fetch();
+}
+
+/**
+ * Determine whether a town exists at the given coordinates.
+ */
+function townExists(int $latitude, int $longitude, $link = null)
+{
+    $link = openLinkIfNull($link);
+    $town = prepare('select id from {{ table }} where latitude=? and longitude=? limit 1', 'towns', $link);
+    $town = execute($town, [$latitude, $longitude])->fetch();
+    return $town ? true : false;
+}
+
+/**
+ * Get town data for given coordinates.
+ */
+function getTown(int $latitude, int $longitude, $link = null)
+{
+    $link = openLinkIfNull($link);
+    $town = prepare('select * from {{table}} where latitude=? and longitude=? limit 1', 'towns');
+    $town = execute($town, [$latitude, $longitude]);
+    return $town->fetch();
 }
 
 /**
@@ -148,7 +224,7 @@ function is_email(string $email)
  * Ensure no XSS attacks can occur by sanitizing strings
  * However, this doesn't prevent some JS eval() attacks
  */
-function makesafe(string $string)
+function safe(string $string = '')
 {
     return htmlentities($string, ENT_QUOTES);
 }
@@ -156,41 +232,89 @@ function makesafe(string $string)
 /**
  * Check whether or not the user's "dkgame" cookie is authorized/valid.
  */
-function checkcookies()
+function checkcookies($link = null)
 {
-    $authorized = true;
+    $link = openLinkIfNull($link);
 
     if (isset($_COOKIE["dkgame"])) {
+        $authorized = true;
+
         /**
          * Cookie Format
          * {user id} {username} {password from login} {remember me}
          */
         $cookie = explode(' ', $_COOKIE['dkgame']);
 
-        $query = doquery("SELECT * FROM {{table}} WHERE username='{$cookie[1]}'", "users");
-        if (mysql_num_rows($query) != 1) { $authorized = false; }
+        // Query the database for the user
+        $user = prepare('select password from {{ table }} where id=?', 'users', $link);
+        $user = execute($user, [$cookie[0]])->fetch();
 
-        $data = mysql_fetch_array($query);
-        if ($data['id'] != $cookie[0]) { $authorized = false; }
-        if (! password_verify($cookie[2], $data['password'])) { $authorized = false; }
+        // If the user doesn't exist, return not authorized
+        if (! $user) { $authorized = false; }
+
+        // If the password in the cookie doesn't match the password in the database, return not authoried
+        if (! password_verify($cookie[2], $user['password'])) { $authorized = false; }
         
         if ($authorized) {
-            $newcookie = implode(" ", $cookie);
-            if ($cookie[3] == 1) { $expiretime = time() + 31536000; } else { $expiretime = 0; }
-            setcookie("dkgame", $newcookie, $expiretime, "/", "", 0);
-            doquery("UPDATE {{table}} SET onlinetime=NOW() WHERE id='$cookie[0]' LIMIT 1", "users");
-            return $data;
-        } else {
-            setcookie('dkgame', '', time() - 10000, '', '', '');
+            // Condense our cookie back down to create a new one, and determine our expiration time.
+            $new = implode(' ', $cookie);
+            $expireTime = $cookie[3] == 1 ? time() + 31536000 : 0;
+
+            // Create the new cookie
+            setcookie('dkgame', $new, $expireTime, '/', '', 0);
+
+            // Update the user's logged in time
+            quick('update {{ table }} set onlinetime=now() where id=?', 'users', [$cookie[0]], $link);
+
+            return true;
         }
     }
-        
-    return $authorized;
+    
+    deleteCookie();
+    return false;
+}
+
+/**
+ * Set the 'dkgame' cookie to a time in the past to clear it.
+ */
+function deleteCookie()
+{
+    setcookie('dkgame', '', time() - 10000, '', '', '');
+}
+
+/**
+ * Get the user's data from the cookie.
+ */
+function getUserFromCookie($link = null)
+{
+    $link = openLinkIfNull($link);
+
+    /**
+     * Cookie Format
+     * {user id} {username} {password from login} {remember me}
+     */
+    $cookie = explode(' ', $_COOKIE['dkgame']);
+
+    $user = prepare('select * from {{ table }} where id=?', 'users', $link);
+    $user = execute($user, [$cookie[0]])->fetch();
+    return $user;
+}
+
+/**
+ * Get the user with the given id
+ */
+function getUserFromId(int $id, $link = null)
+{
+    $link = openLinkIfNull($link);
+
+    $user = prepare('select * from {{ table }} where id=?', 'users', $link);
+    $user = execute($user, [$id])->fetch();
+    return $user;
 }
 
 function admindisplay($content, $title) { // Finalize page and output to browser.
     
-    global $numqueries, $userrow, $controlrow, $starttime, $version, $build;
+    global $queryCount, $user, $controlrow, $starttime, $version, $build;
     if (!isset($controlrow)) {
         $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
         $controlrow = mysql_fetch_array($controlquery);
@@ -206,7 +330,7 @@ function admindisplay($content, $title) { // Finalize page and output to browser
         "title"=>$title,
         "content"=>$content,
         "totaltime"=>round(getmicrotime() - $starttime, 4),
-        "numqueries"=>$numqueries,
+        "numqueries"=>$queryCount,
         "version"=>$version,
         "build"=>$build);
     $page = parsetemplate($template, $finalarray);
@@ -220,7 +344,7 @@ function admindisplay($content, $title) { // Finalize page and output to browser
 
 function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, $badstart=false) { // Finalize page and output to browser.
     
-    global $numqueries, $userrow, $controlrow, $version, $build;
+    global $queryCount, $user, $controlrow, $version, $build;
     if (!isset($controlrow)) {
         $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
         $controlrow = mysql_fetch_array($controlquery);
@@ -241,37 +365,37 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
         $topnav = "<a href=\"users.php?do=login\"><img src=\"images/button_login.gif\" alt=\"Log In\" title=\"Log In\" border=\"0\" /></a> <a href=\"users.php?do=register\"><img src=\"images/button_register.gif\" alt=\"Register\" title=\"Register\" border=\"0\" /></a> <a href=\"help.php\"><img src=\"images/button_help.gif\" alt=\"Help\" title=\"Help\" border=\"0\" /></a>";
     }
     
-    if (isset($userrow)) {
+    if (isset($user)) {
         
         // Get userrow again, in case something has been updated.
-        $userquery = doquery("SELECT * FROM {{table}} WHERE id='".$userrow["id"]."' LIMIT 1", "users");
-        unset($userrow);
-        $userrow = mysql_fetch_array($userquery);
+        $userquery = doquery("SELECT * FROM {{table}} WHERE id='".$user["id"]."' LIMIT 1", "users");
+        unset($user);
+        $user = mysql_fetch_array($userquery);
         
         // Current town name.
-        if ($userrow["currentaction"] == "In Town") {
-            $townquery = doquery("SELECT * FROM {{table}} WHERE latitude='".$userrow["latitude"]."' AND longitude='".$userrow["longitude"]."' LIMIT 1", "towns");
+        if ($user["currentaction"] == "In Town") {
+            $townquery = doquery("SELECT * FROM {{table}} WHERE latitude='".$user["latitude"]."' AND longitude='".$user["longitude"]."' LIMIT 1", "towns");
             $townrow = mysql_fetch_array($townquery);
-            $userrow["currenttown"] = "Welcome to <b>".$townrow["name"]."</b>.<br /><br />";
+            $user["currenttown"] = "Welcome to <b>".$townrow["name"]."</b>.<br /><br />";
         } else {
-            $userrow["currenttown"] = "";
+            $user["currenttown"] = "";
         }
         
-        if ($controlrow["forumtype"] == 0) { $userrow["forumslink"] = ""; }
-        elseif ($controlrow["forumtype"] == 1) { $userrow["forumslink"] = "<a href=\"forum.php\">Forum</a><br />"; }
-        elseif ($controlrow["forumtype"] == 2) { $userrow["forumslink"] = "<a href=\"".$controlrow["forumaddress"]."\">Forum</a><br />"; }
+        if ($controlrow["forumtype"] == 0) { $user["forumslink"] = ""; }
+        elseif ($controlrow["forumtype"] == 1) { $user["forumslink"] = "<a href=\"forum.php\">Forum</a><br />"; }
+        elseif ($controlrow["forumtype"] == 2) { $user["forumslink"] = "<a href=\"".$controlrow["forumaddress"]."\">Forum</a><br />"; }
         
         // Format various userrow stuffs...
-        if ($userrow["latitude"] < 0) { $userrow["latitude"] = $userrow["latitude"] * -1 . "S"; } else { $userrow["latitude"] .= "N"; }
-        if ($userrow["longitude"] < 0) { $userrow["longitude"] = $userrow["longitude"] * -1 . "W"; } else { $userrow["longitude"] .= "E"; }
-        $userrow["experience"] = number_format($userrow["experience"]);
-        $userrow["gold"] = number_format($userrow["gold"]);
-        if ($userrow["authlevel"] == 1) { $userrow["adminlink"] = "<a href=\"admin.php\">Admin</a><br />"; } else { $userrow["adminlink"] = ""; }
+        if ($user["latitude"] < 0) { $user["latitude"] = $user["latitude"] * -1 . "S"; } else { $user["latitude"] .= "N"; }
+        if ($user["longitude"] < 0) { $user["longitude"] = $user["longitude"] * -1 . "W"; } else { $user["longitude"] .= "E"; }
+        $user["experience"] = number_format($user["experience"]);
+        $user["gold"] = number_format($user["gold"]);
+        if ($user["authlevel"] == 1) { $user["adminlink"] = "<a href=\"admin.php\">Admin</a><br />"; } else { $user["adminlink"] = ""; }
         
         // HP/MP/TP bars.
-        $stathp = ceil($userrow["currenthp"] / $userrow["maxhp"] * 100);
-        if ($userrow["maxmp"] != 0) { $statmp = ceil($userrow["currentmp"] / $userrow["maxmp"] * 100); } else { $statmp = 0; }
-        $stattp = ceil($userrow["currenttp"] / $userrow["maxtp"] * 100);
+        $stathp = ceil($user["currenthp"] / $user["maxhp"] * 100);
+        if ($user["maxmp"] != 0) { $statmp = ceil($user["currentmp"] / $user["maxmp"] * 100); } else { $statmp = 0; }
+        $stattp = ceil($user["currenttp"] / $user["maxtp"] * 100);
         $stattable = "<table width=\"100\"><tr><td width=\"33%\">\n";
         $stattable .= "<table cellspacing=\"0\" cellpadding=\"0\"><tr><td style=\"padding:0px; width:15px; height:100px; border:solid 1px black; vertical-align:bottom;\">\n";
         if ($stathp >= 66) { $stattable .= "<div style=\"padding:0px; height:".$stathp."px; border-top:solid 1px black; background-image:url(images/bars_green.gif);\"><img src=\"images/bars_green.gif\" alt=\"\" /></div>"; }
@@ -289,53 +413,53 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
         if ($stattp < 33) { $stattable .= "<div style=\"padding:0px; height:".$stattp."px; border-top:solid 1px black; background-image:url(images/bars_red.gif);\"><img src=\"images/bars_red.gif\" alt=\"\" /></div>"; }
         $stattable .= "</td></tr></table></td>\n";
         $stattable .= "</tr><tr><td>HP</td><td>MP</td><td>TP</td></tr></table>\n";
-        $userrow["statbars"] = $stattable;
+        $user["statbars"] = $stattable;
         
         // Now make numbers stand out if they're low.
-        if ($userrow["currenthp"] <= ($userrow["maxhp"]/5)) { $userrow["currenthp"] = "<blink><span class=\"highlight\"><b>*".$userrow["currenthp"]."*</b></span></blink>"; }
-        if ($userrow["currentmp"] <= ($userrow["maxmp"]/5)) { $userrow["currentmp"] = "<blink><span class=\"highlight\"><b>*".$userrow["currentmp"]."*</b></span></blink>"; }
+        if ($user["currenthp"] <= ($user["maxhp"]/5)) { $user["currenthp"] = "<blink><span class=\"highlight\"><b>*".$user["currenthp"]."*</b></span></blink>"; }
+        if ($user["currentmp"] <= ($user["maxmp"]/5)) { $user["currentmp"] = "<blink><span class=\"highlight\"><b>*".$user["currentmp"]."*</b></span></blink>"; }
 
         $spellquery = doquery("SELECT id,name,type FROM {{table}}","spells");
-        $userspells = explode(",",$userrow["spells"]);
-        $userrow["magiclist"] = "";
+        $userspells = explode(",",$user["spells"]);
+        $user["magiclist"] = "";
         while ($spellrow = mysql_fetch_array($spellquery)) {
             $spell = false;
             foreach($userspells as $a => $b) {
                 if ($b == $spellrow["id"] && $spellrow["type"] == 1) { $spell = true; }
             }
             if ($spell == true) {
-                $userrow["magiclist"] .= "<a href=\"index.php?do=spell:".$spellrow["id"]."\">".$spellrow["name"]."</a><br />";
+                $user["magiclist"] .= "<a href=\"index.php?do=spell:".$spellrow["id"]."\">".$spellrow["name"]."</a><br />";
             }
         }
-        if ($userrow["magiclist"] == "") { $userrow["magiclist"] = "None"; }
+        if ($user["magiclist"] == "") { $user["magiclist"] = "None"; }
         
         // Travel To list.
-        $townslist = explode(",",$userrow["towns"]);
+        $townslist = explode(",",$user["towns"]);
         $townquery2 = doquery("SELECT * FROM {{table}} ORDER BY id", "towns");
-        $userrow["townslist"] = "";
+        $user["townslist"] = "";
         while ($townrow2 = mysql_fetch_array($townquery2)) {
             $town = false;
             foreach($townslist as $a => $b) {
                 if ($b == $townrow2["id"]) { $town = true; }
             }
             if ($town == true) { 
-                $userrow["townslist"] .= "<a href=\"index.php?do=gotown:".$townrow2["id"]."\">".$townrow2["name"]."</a><br />\n"; 
+                $user["townslist"] .= "<a href=\"index.php?do=gotown:".$townrow2["id"]."\">".$townrow2["name"]."</a><br />\n"; 
             }
         }
         
     } else {
-        $userrow = array();
+        $user = array();
     }
 
     $finalarray = array(
         "dkgamename"=>$controlrow["gamename"],
         "title"=>$title,
         "content"=>$content,
-        "rightnav"=>parsetemplate($rightnav,$userrow),
-        "leftnav"=>parsetemplate($leftnav,$userrow),
+        "rightnav"=>parsetemplate($rightnav,$user),
+        "leftnav"=>parsetemplate($leftnav,$user),
         "topnav"=>$topnav,
         "totaltime"=>round(getmicrotime() - $starttime, 4),
-        "numqueries"=>$numqueries,
+        "numqueries"=>$queryCount,
         "version"=>$version,
         "build"=>$build);
     $page = parsetemplate($template, $finalarray);

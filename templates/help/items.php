@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<title><?php echo $controlrow["gamename"]; ?> Help</title>
+<title><?php echo $control["gamename"]; ?> Help</title>
 <style type="text/css">
 body {
   background-image: url(images/background.jpg);

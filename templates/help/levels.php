@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<title><?php echo $controlrow["gamename"]; ?> Help</title>
+<title><?php echo $control["gamename"]; ?> Help</title>
 <style type="text/css">
 body {
   background-image: url(images/background.jpg);
@@ -62,13 +62,13 @@ a:hover {
 </head>
 <body>
 <a name="top"></a>
-<h1><?php echo $controlrow["gamename"]; ?> Help: Levels</h1>
+<h1><?php echo $control["gamename"]; ?> Help: Levels</h1>
 [ <a href="help.php">Return to Help</a> | <a href="index.php">Return to the game</a> ]
 
 <br /><br /><hr />
 
 <table width="50%" style="border: solid 1px black" cellspacing="0" cellpadding="0">
-<tr><td colspan="8" bgcolor="#ffffff"><center><b><?php echo $controlrow["class1name"]; ?> Levels</b></center></td></tr>
+<tr><td colspan="8" bgcolor="#ffffff"><center><b><?php echo $control["class1name"]; ?> Levels</b></center></td></tr>
 <tr><td><b>Level</b><td><b>Exp.</b></td><td><b>HP</b></td><td><b>MP</b></td><td><b>TP</b></td><td><b>Strength</b></td><td><b>Dexterity</b></td><td><b>Spell</b></td></tr>
 <?php
 $count = 1;
@@ -87,7 +87,7 @@ while ($itemsrow = mysql_fetch_array($itemsquery)) {
 </table>
 <br /><br />
 <table width="50%" style="border: solid 1px black" cellspacing="0" cellpadding="0">
-<tr><td colspan="8" bgcolor="#ffffff"><center><b><?php echo $controlrow["class2name"]; ?> Levels</b></center></td></tr>
+<tr><td colspan="8" bgcolor="#ffffff"><center><b><?php echo $control["class2name"]; ?> Levels</b></center></td></tr>
 <tr><td><b>Level</b><td><b>Exp.</b></td><td><b>HP</b></td><td><b>MP</b></td><td><b>TP</b></td><td><b>Strength</b></td><td><b>Dexterity</b></td><td><b>Spell</b></td></tr>
 <?php
 $count = 1;
@@ -106,7 +106,7 @@ while ($itemsrow = mysql_fetch_array($itemsquery)) {
 </table>
 <br /><br />
 <table width="50%" style="border: solid 1px black" cellspacing="0" cellpadding="0">
-<tr><td colspan="8" bgcolor="#ffffff"><center><b><?php echo $controlrow["class3name"]; ?> Levels</b></center></td></tr>
+<tr><td colspan="8" bgcolor="#ffffff"><center><b><?php echo $control["class3name"]; ?> Levels</b></center></td></tr>
 <tr><td><b>Level</b><td><b>Exp.</b></td><td><b>HP</b></td><td><b>MP</b></td><td><b>TP</b></td><td><b>Strength</b></td><td><b>Dexterity</b></td><td><b>Spell</b></td></tr>
 <?php
 $count = 1;
