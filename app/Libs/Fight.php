@@ -415,7 +415,7 @@ function victory()
     if ($user["experience"] + $exp < 16777215) { $newexp = $user["experience"] + $exp; $warnexp = ""; } else { $newexp = $user["experience"]; $exp = 0; $warnexp = "You have maxed out your experience points."; }
     if ($user["gold"] + $gold < 16777215) { $newgold = $user["gold"] + $gold; $warngold = ""; } else { $newgold = $user["gold"]; $gold = 0; $warngold = "You have maxed out your experience points."; }
     
-    $expQuery = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $testLink);
+    $expQuery = prepare("select * from {{ table }} where id=?", 'levels', $testLink);
     $levelrow = execute($expQuery, [$user['level'] + 1])->fetch();
     
     if ($user["level"] < 100) {

@@ -9,7 +9,6 @@ require 'app/Libs/Explore.php';
 require 'app/Libs/Towns.php';
 require 'app/Libs/Fight.php';
 
-opendb();
 $link = openLink();
 $control = getControl($link);
 

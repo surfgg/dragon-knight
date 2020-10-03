@@ -16,7 +16,7 @@ function move()
 
     $gSize = $control['gamesize'];
     
-    if ($user["currentaction"] == "Fighting") { header("Location: index.php?do=fight"); }
+    if ($user["currentaction"] == "Fighting") { redirect("index.php?do=fight"); }
     
     $latitude = $user["latitude"];
     $longitude = $user["longitude"];

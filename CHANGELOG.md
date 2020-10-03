@@ -4,10 +4,13 @@ All the notable changes done for Dragon Knight's development will be recorded in
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+No planned features right at this moment
+
+## v1.3.0 - 2020/10/03
 ### Added
-- Added a new `app` directory to store libraries, vendor scripts and game config
-- Created a new library for database-related functions, uses PDO in order to replace old `mysql_` functions
-- Added `getControl` function that accepts a PDO link as a parameter, retrieves the control row
+- A new `app` directory to house libraries, vendor code, and game config
+- Created a new Database library that utilizes PDO in a simple format
+- A new `getControl` function that accepts a PDO link as a parameter, retrieves the game's control row
 - Added two ways of retrieving user data; `getUserFromCookie` and `getUserFromId`
 - Added a super-helpful debug method that formats var_dump and dies, called `dd()`
 - Added two helper functions to increment and get the number of queries executed; `incrementQueryCounter` and `getQueryCount`
@@ -15,33 +18,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Created a new `resources` directory to contain css, images and sql query files
 
 ### Changed
-- Scripts that contain only functions have been moved into `app/Libs` and are included on an as-needed basis to cut down on root directory bloat
-- Condensed the help pages into one `help.php`, moved help pages into templates in `templates/help/`
+- Scripts that contained only functions have been moved into `app/Libs` and are included on an as-needed basis to cut down on root directory bloat
+- Took all help pages and turned them into templates in `templates/help`
+- Condensed `help.php` down into one script that utilizes the new help page templates
 - Release versions of the game will no longer have `DEBUG` set to true by default
 - Moved functions in `login.php` to `users.php`, changed all game links accordingly
 - Renamed `Lib.php` to `Helpers.php`, updated previous changelog entries to reflect this
 - `makesafe()` has been refactored to `safe()`, but performs the same function
-- All town, fight and exploration functions now use the PDO database methods
 - The `$numqueries` global variable has been refactored to `$queryCount`
 - All install pages are now contained in templates in `templates/install`
 - The installation `create` and `populate` queries have been moved into the new sql directory, `resoures/sql/install`
 - Errors in the admin account creation part of the installation process will now display the admin account field again, with the errors listed
-- The install script now uses all PDO functions
-- The help pages now all use the PDO functions, and share a single connection to the database
-- All the forum's functionality now uses the new PDO functions
 - Messages, titles and usernames in the forum are now properly escaped before being output
-- The admin panel and all it's functions now use the PDO database functions
 - The admin panel's pages and forms are now in templates files in `templates/admin`
-
-### Deprecated
-- The `mysql_` shim and all old functions using the `mysql_` functions are being phased out and replaced with PDO functions
+- All functionality of the game has been fully converted to the new PDO library
 
 ### Removed
+- Removed the `mysql_` shim, and all functions related to/using it
+- Removed `login.php` after moving all functions to `users.php`
 - Removed all old XML validation content. Pages are now only made with HTML5 compliant tags.
 - `charname` has been completely removed from the game - the installer has been updated to not add that column in the database. All relevant bits of code have been updated as well.
 - The "fifth" page of the installation process, originally used to send a "call home" for installs, has been removed. A similar feature will be added again later.
 
-## v1.2.0 - 9/30/2020
+## v1.2.0 - 2020/09/30
 ### Changed
 - The register function and installer now use a [cryptographically secure method of hashing and storing passwords](https://www.php.net/manual/en/function.password-hash).
 - Logging in now [checks against the password hash correctly](https://www.php.net/manual/en/function.password-verify.php).
@@ -62,7 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - The installer no longer uses a `charname` field, and instead sets `charname` to `username`
 - The `cookies.php` file has been deleted, and the `checkcookies` function moved to `Helpers.php`
 
-## v1.1.11
+## v1.1.11 - 2020/08/27
 ### Added
 - A `mysql_` shim for PHP 7 was added in order to make the game function.
 

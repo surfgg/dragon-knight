@@ -2,9 +2,8 @@
 
 require 'app/Libs/Helpers.php';
 
-$link = opendb();
-$testLink = openLink();
-$control = getControl($testLink);
+$link = openLink();
+$control = getControl($link);
 
 $do = isset($_GET['do']) ? $_GET['do'] : 'login';
 
@@ -49,7 +48,7 @@ function login()
 
 function register()
 {   
-    global $control, $testLink;
+    global $control, $link;
     
     if (isset($_POST['submit'])) {
         $username = trim($_POST['username']);
@@ -68,7 +67,7 @@ function register()
         $regex = '/^[a-zA-Z0-9][a-zA-Z0-9_-]+[a-zA-Z0-9]$/';
         if (! preg_match($regex, $username)) { $errors[] = 'Username must be alphanumeric.'; }
 
-        $usernameExists = prepare('select id from {{ table }} where username=?', 'users', $testLink);
+        $usernameExists = prepare('select id from {{ table }} where username=?', 'users', $link);
         $usernameExists = execute($usernameExists, [$username])->fetch() ? true : false;
         if ($usernameExists) { $errors[] = "{$username} is already taken. Try another one."; }
     
@@ -77,7 +76,7 @@ function register()
         if ($email !== $emailConfirm) { $errors[] = 'Email addresses must match.'; }
         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) { $errors[] = 'Must provide valid email address.'; }
 
-        $emailExists = prepare('select id from {{ table }} where email=?', 'users', $testLink);
+        $emailExists = prepare('select id from {{ table }} where email=?', 'users', $link);
         $emailExists = execute($emailExists, [$email])->fetch() ? true : false;
         if ($emailExists) { $errors[] = "Email address is already in use. Try another one."; }
         
@@ -97,7 +96,7 @@ function register()
                 $verifycode='1';
             }
 
-            $insert = prepare('insert into {{ table }} set regdate=now(), verify=?, username=?, password=?, email=?, charclass=?, difficulty=?', 'users', $testLink);
+            $insert = prepare('insert into {{ table }} set regdate=now(), verify=?, username=?, password=?, email=?, charclass=?, difficulty=?', 'users', $link);
             execute($insert, [
                 $verifycode,
                 $username,
@@ -142,12 +141,12 @@ function register()
 
 function verify()
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST['submit'])) {
         $data = trimData($_POST);
 
-        $user = prepare('select username, email, verify from {{ table }} where username=?', 'users', $testLink);
+        $user = prepare('select username, email, verify from {{ table }} where username=?', 'users', $link);
         $user = execute($user, [$data['username']])->fetch();
 
         if (! $user) { die('No account exists with that username.'); }
@@ -156,7 +155,7 @@ function verify()
         if ($user["verify"] != $data['verify']) { die("Incorrect verification code."); }
 
         // If we've made it this far, should be safe to update their account.
-        $query = prepare("update {{ table }} set verify='1' where username=?", 'users', $testLink);
+        $query = prepare("update {{ table }} set verify='1' where username=?", 'users', $link);
         execute($query, [$data['username']]);
 
         display("Your account was verified successfully.<br /><br />You may now continue to the <a href=\"users.php?do=login\">Login Page</a> and start playing the game.<br /><br />Thanks for playing!","Verify Email",false,false,false);
@@ -169,12 +168,12 @@ function verify()
 
 function lostpassword()
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST['submit'])) {
         $data = trimData($_POST);
 
-        $user = prepare('select id from {{ table }} where email=?', 'users', $testLink);
+        $user = prepare('select id from {{ table }} where email=?', 'users', $link);
         $user = execute($user, [$data['email']])->fetch();
 
         if (! $user) { die('No account with that email address.'); }
@@ -185,7 +184,7 @@ function lostpassword()
         }
         $hashed = password_hash($new, PASSWORD_DEFAULT);
 
-        $update = prepare('update {{ table }} set password=? where email=?', 'users', $testLink);
+        $update = prepare('update {{ table }} set password=? where email=?', 'users', $link);
         execute($update, [$hashed, $data['email']]);
 
         if (sendpassemail($data['email'], $new) == true) {
@@ -204,12 +203,12 @@ function lostpassword()
 
 function changepassword()
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         $data = trimData($_POST);
 
-        $user = prepare('select id, password from {{ table }} where username=?', 'users', $testLink);
+        $user = prepare('select id, password from {{ table }} where username=?', 'users', $link);
         $user = execute($user, [$data['username']])->fetch();
 
         if (! $user) { die('No account with that username.'); }
@@ -217,7 +216,7 @@ function changepassword()
         if ($data['newpass1'] != $data['newpass2']) { die('New passwords don\'t match.'); }
 
         $new = password_hash($data['newpass1'], PASSWORD_DEFAULT);
-        $update = prepare('update {{ table }} set password=? where username=?', 'users', $testLink);
+        $update = prepare('update {{ table }} set password=? where username=?', 'users', $link);
         execute($update, [$new, $data['username']]);
 
         if (isset($_COOKIE["dkgame"])) { deleteCookie(); }

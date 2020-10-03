@@ -14,14 +14,6 @@ if (DEBUG) {
 }
 
 /**
- * This brings in a shim that allows the (unsafe) usage
- * of old mysql_ functions. It's a very temporary, very
- * undesirable fix for the project.
- * Credit: @dshafik https://github.com/dshafik/php7-mysql-shim
- */
-require 'app/Vendor/mysql-shim.php';
-
-/**
  * On every page we use the Helpers library, we'll likely use the Database
  * library. As such, we'll require it here. We'll also open a link to the
  * database, since almost every page requires it.
@@ -82,6 +74,7 @@ function dd($variable = '', bool $die = true) {
 function redirect(string $location)
 {
     header("Location: {$location}");
+    exit;
 }
 
 /**
@@ -100,20 +93,6 @@ function getQueryCount()
 {
     global $queryCount;
     return $queryCount;
-}
-
-function opendb()
-{
-    $link = mysql_connect(config('db.server'), config('db.user'), config('db.password')) or die(mysql_error());
-    mysql_select_db(config('db.database')) or die(mysql_error());
-    return $link;
-}
-
-function doquery($query, $table) { // Something of a tiny little database abstraction layer.
-    global $queryCount;
-    $sqlquery = mysql_query(str_replace("{{table}}", prefix($table), $query)) or die(mysql_error());
-    $queryCount++;
-    return $sqlquery;
 }
 
 /**

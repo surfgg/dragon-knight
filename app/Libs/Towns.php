@@ -11,20 +11,19 @@
   */
 function inn()
 {
-    global $user, $testLink;
+    global $user, $link;
 
-    $townquery = doquery("SELECT name, innprice FROM {{table}} WHERE latitude='{$user["latitude"]}' AND longitude='{$user["longitude"]}' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) != 1) { display('Cheat attempt detected. <br><br> Get a life, loser.', 'Error'); }
-    $townrow = mysql_fetch_array($townquery);
+    $townrow = getTown($user['latitude'], $user['longitude'], $link);
     
     if ($user["gold"] < $townrow["innprice"]) { display("You do not have enough gold to stay at this Inn tonight. <br><br> You may return to <a href=\"index.php\">town</a>, or use the direction buttons on the left to start exploring.", "Inn"); die(); }
     
     if (isset($_POST["submit"])) {
         $newgold = $user["gold"] - $townrow["innprice"];
-        doquery("UPDATE {{table}} SET gold='{$newgold}', currenthp='{$user["maxhp"]}', currentmp='{$user["maxmp"]}', currenttp='{$user["maxtp"]}' WHERE id='{$user["id"]}'", "users");
+        $rested = prepare('update {{ table }} set gold=?, currenthp=?, currentmp=?, currenttp=? where id=?', 'users', $link);
+        execute($rested, [$newgold, $user['maxhp'], $user['maxmp'], $user['maxtp'], $user['id']]);
         $page = "You wake up feeling refreshed and ready for action.<br /><br />You may return to <a href=\"index.php\">town</a>, or use the direction buttons on the left to start exploring.";
     } elseif (isset($_POST["cancel"])) {
-        header("Location: index.php");
+        redirect('index.php');
     } else {
         $page = gettemplate('inn');
         $page = parsetemplate($page, $townrow);
@@ -38,23 +37,21 @@ function inn()
  */
 function buy()
 {
-    global $user, $queryCount;
+    global $user, $link;
     
-    $townquery = doquery("SELECT name, itemslist FROM {{table}} WHERE latitude='{$user["latitude"]}' AND longitude='{$user["longitude"]}' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) != 1) { display('Cheat attempt detected. <br><br> Get a life, loser.', 'Error'); }
-    $townrow = mysql_fetch_array($townquery);
+    $townrow = getTown($user['latitude'], $user['longitude'], $link);
     
     $itemslist = explode(",", $townrow["itemslist"]);
     $querystring = "";
-    foreach($itemslist as $a=>$b) {
-        $querystring .= "id='{$b}' OR ";
+    foreach($itemslist as $id) {
+        $querystring .= "id='{$id}' OR ";
     }
     $querystring = rtrim($querystring, " OR ");
     
-    $itemsquery = doquery("SELECT * FROM {{table}} WHERE {$querystring} ORDER BY id", 'items');
+    $query = query("select * from {{ table }} where {$querystring}", 'items');
     $page = "Buying weapons will increase your Attack Power. Buying armor and shields will increase your Defense Power.<br /><br />Click an item name to purchase it.<br /><br />The following items are available at this town:<br /><br />\n";
     $page .= "<table width=\"80%\">\n";
-    while ($itemsrow = mysql_fetch_array($itemsquery)) {
+    foreach ($query->fetchAll() as $itemsrow) {
         if ($itemsrow["type"] == 1) { $attrib = "Attack Power:"; } else  { $attrib = "Defense Power:"; }
         $page .= "<tr><td width=\"4%\">";
         if ($itemsrow["type"] == 1) { $page .= "<img src=\"images/icon_weapon.gif\" alt=\"weapon\" /></td>"; }
@@ -78,39 +75,35 @@ function buy()
  */
 function buy2($id)
 {
-    global $user, $queryCount;
+    global $user, $link;
     
-    $townquery = doquery("SELECT name,itemslist FROM {{table}} WHERE latitude='".$user["latitude"]."' AND longitude='".$user["longitude"]."' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) != 1) { display("Cheat attempt detected.<br /><br />Get a life, loser.", "Error"); }
-    $townrow = mysql_fetch_array($townquery);
+
+    $townrow = getTown($user['latitude'], $user['longitude'], $link);
     $townitems = explode(",",$townrow["itemslist"]);
+
     if (! in_array($id, $townitems)) { display("Cheat attempt detected.<br /><br />Get a life, loser.", "Error"); }
     
-    $itemsquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "items");
-    $itemsrow = mysql_fetch_array($itemsquery);
-    
+    $itemsrow = quick('select * from {{ table }} where id=?', 'items', [$id], $link)->fetch();
+
     if ($user["gold"] < $itemsrow["buycost"]) { display("You do not have enough gold to buy this item.<br /><br />You may return to <a href=\"index.php\">town</a>, <a href=\"index.php?do=buy\">store</a>, or use the direction buttons on the left to start exploring.", "Buy Items"); die(); }
     
     if ($itemsrow["type"] == 1) {
         if ($user["weaponid"] != 0) { 
-            $itemsquery2 = doquery("SELECT * FROM {{table}} WHERE id='".$user["weaponid"]."' LIMIT 1", "items");
-            $itemsrow2 = mysql_fetch_array($itemsquery2);
+            $itemsrow2 = quick('select * from {{ table }} where id=?', 'items', [$user['weaponid']], $link)->fetch();
             $page = "If you are buying the ".$itemsrow["name"].", then I will buy your ".$itemsrow2["name"]." for ".ceil($itemsrow2["buycost"]/2)." gold. Is that ok?<br /><br /><form action=\"index.php?do=buy3:$id\" method=\"post\"><input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" /></form>";
         } else {
             $page = "You are buying the ".$itemsrow["name"].", is that ok?<br /><br /><form action=\"index.php?do=buy3:$id\" method=\"post\"><input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" /></form>";
         }
     } elseif ($itemsrow["type"] == 2) {
         if ($user["armorid"] != 0) { 
-            $itemsquery2 = doquery("SELECT * FROM {{table}} WHERE id='".$user["armorid"]."' LIMIT 1", "items");
-            $itemsrow2 = mysql_fetch_array($itemsquery2);
+            $itemsrow2 = quick('select * from {{ table }} where id=?', 'items', [$user['armorid']], $link)->fetch();
             $page = "If you are buying the ".$itemsrow["name"].", then I will buy your ".$itemsrow2["name"]." for ".ceil($itemsrow2["buycost"]/2)." gold. Is that ok?<br /><br /><form action=\"index.php?do=buy3:$id\" method=\"post\"><input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" /></form>";
         } else {
             $page = "You are buying the ".$itemsrow["name"].", is that ok?<br /><br /><form action=\"index.php?do=buy3:$id\" method=\"post\"><input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" /></form>";
         }
     } elseif ($itemsrow["type"] == 3) {
         if ($user["shieldid"] != 0) { 
-            $itemsquery2 = doquery("SELECT * FROM {{table}} WHERE id='".$user["shieldid"]."' LIMIT 1", "items");
-            $itemsrow2 = mysql_fetch_array($itemsquery2);
+            $itemsrow2 = quick('select * from {{ table }} where id=?', 'items', [$user['shieldid']], $link)->fetch();
             $page = "If you are buying the ".$itemsrow["name"].", then I will buy your ".$itemsrow2["name"]." for ".ceil($itemsrow2["buycost"]/2)." gold. Is that ok?<br /><br /><form action=\"index.php?do=buy3:$id\" method=\"post\"><input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" /></form>";
         } else {
             $page = "You are buying the ".$itemsrow["name"].", is that ok?<br /><br /><form action=\"index.php?do=buy3:$id\" method=\"post\"><input type=\"submit\" name=\"submit\" value=\"Yes\" /> <input type=\"submit\" name=\"cancel\" value=\"No\" /></form>";
@@ -125,26 +118,23 @@ function buy2($id)
  */
 function buy3($id)
 {
-    if (isset($_POST["cancel"])) { header('Location: index.php'); }
+    if (isset($_POST["cancel"])) { redirect('index.php'); }
     
-    global $user;
+    global $user, $link;
     
-    $townquery = doquery("SELECT name,itemslist FROM {{table}} WHERE latitude='".$user["latitude"]."' AND longitude='".$user["longitude"]."' LIMIT 1", "towns");
-    if (mysql_num_rows($townquery) != 1) { display("Cheat attempt detected.<br /><br />Get a life, loser.", "Error"); }
-    $townrow = mysql_fetch_array($townquery);
+    $townrow = getTown($user['latitude'], $user['longitude'], $link);
     $townitems = explode(",",$townrow["itemslist"]);
+
     if (! in_array($id, $townitems)) { display("Cheat attempt detected.<br /><br />Get a life, loser.", "Error"); }
     
-    $itemsquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "items");
-    $itemsrow = mysql_fetch_array($itemsquery);
+    $itemsrow = quick('select * from {{ table }} where id=?', 'items', [$id], $link)->fetch();
     
     if ($user["gold"] < $itemsrow["buycost"]) { display("You do not have enough gold to buy this item.<br /><br />You may return to <a href=\"index.php\">town</a>, <a href=\"index.php?do=buy\">store</a>, or use the direction buttons on the left to start exploring.", "Buy Items"); die(); }
     
     if ($itemsrow["type"] == 1) { // weapon
     	// Check if they already have an item in the slot.
         if ($user["weaponid"] != 0) { 
-            $itemsquery2 = doquery("SELECT * FROM {{table}} WHERE id='".$user["weaponid"]."' LIMIT 1", "items");
-            $itemsrow2 = mysql_fetch_array($itemsquery2);
+            $itemsrow2 = quick('select * from {{ table }} where id=?', 'items', [$user['weaponid']], $link)->fetch();
         } else {
             $itemsrow2 = array("attribute"=>0,"buycost"=>0,"special"=>"X");
         }
@@ -180,12 +170,13 @@ function buy3($id)
         if ($user["currenttp"] > $user["maxtp"]) { $newtp = $user["maxtp"]; } else { $newtp = $user["currenttp"]; }
         
         // Final update.
-        $updatequery = doquery("UPDATE {{table}} SET $specialchange1 $specialchange2 gold='$newgold', attackpower='$newattack', weaponid='$newid', weaponname='$newname', currenthp='$newhp', currentmp='$newmp', currenttp='$newtp' WHERE id='$userid' LIMIT 1", "users");
+        $query = prepare("update {{ table }} set {$specialchange1} {$specialchange2} gold=?, attackpower=?, weaponid=?, weaponname=?, currenthp=?, currentmp=?, currenttp=? where id=?", 'users', $link);
+        $data = [$newgold, $newattack, $newid, $newname, $newhp, $newmp, $newtp, $userid];
+        execute($query, $data);
     } elseif ($itemsrow["type"] == 2) { // Armor
     	// Check if they already have an item in the slot.
         if ($user["armorid"] != 0) { 
-            $itemsquery2 = doquery("SELECT * FROM {{table}} WHERE id='".$user["armorid"]."' LIMIT 1", "items");
-            $itemsrow2 = mysql_fetch_array($itemsquery2);
+            $itemsrow2 = quick('select * from {{ table }} where id=?', 'items', [$user['armorid']], $link)->fetch();
         } else {
             $itemsrow2 = array("attribute"=>0,"buycost"=>0,"special"=>"X");
         }
@@ -221,12 +212,13 @@ function buy3($id)
         if ($user["currenttp"] > $user["maxtp"]) { $newtp = $user["maxtp"]; } else { $newtp = $user["currenttp"]; }
         
         // Final update.
-        $updatequery = doquery("UPDATE {{table}} SET $specialchange1 $specialchange2 gold='$newgold', defensepower='$newdefense', armorid='$newid', armorname='$newname', currenthp='$newhp', currentmp='$newmp', currenttp='$newtp' WHERE id='$userid' LIMIT 1", "users");
+        $query = prepare("update {{ table }} set {$specialchange1} {$specialchange2} gold=?, defensepower=?, armorid=?, armorname=?, currenthp=?, currentmp=?, currenttp=? where id=?", 'users', $link);
+        $data = [$newgold, $newdefense, $newid, $newname, $newhp, $newmp, $newtp, $userid];
+        execute($query, $data);
     } elseif ($itemsrow["type"] == 3) { // Shield
     	// Check if they already have an item in the slot.
         if ($user["shieldid"] != 0) { 
-            $itemsquery2 = doquery("SELECT * FROM {{table}} WHERE id='".$user["shieldid"]."' LIMIT 1", "items");
-            $itemsrow2 = mysql_fetch_array($itemsquery2);
+            $itemsrow2 = quick('select * from {{ table }} where id=?', 'items', [$user['shieldid']], $link)->fetch();
         } else {
             $itemsrow2 = array("attribute"=>0,"buycost"=>0,"special"=>"X");
         }
@@ -262,7 +254,9 @@ function buy3($id)
         if ($user["currenttp"] > $user["maxtp"]) { $newtp = $user["maxtp"]; } else { $newtp = $user["currenttp"]; }
         
         // Final update.
-        $updatequery = doquery("UPDATE {{table}} SET $specialchange1 $specialchange2 gold='$newgold', defensepower='$newdefense', shieldid='$newid', shieldname='$newname', currenthp='$newhp', currentmp='$newmp', currenttp='$newtp' WHERE id='$userid' LIMIT 1", "users");        
+        $query = prepare("update {{ table }} set {$specialchange1} {$specialchange2} gold=?, defensepower=?, shieldid=?, shieldname=?, currenthp=?, currentmp=?, currenttp=? where id=?", 'users', $link);
+        $data = [$newgold, $newdefense, $newid, $newname, $newhp, $newmp, $newtp, $userid];
+        execute($query, $data);        
     }
     
     display("Thank you for purchasing this item.<br /><br />You may return to <a href=\"index.php\">town</a>, <a href=\"index.php?do=buy\">store</a>, or use the direction buttons on the left to start exploring.", "Buy Items");
@@ -273,7 +267,7 @@ function buy3($id)
  */
 function maps()
 {
-    global $user, $queryCount;
+    global $user, $link;
     
     $mappedtowns = explode(",",$user["towns"]);
     
@@ -281,9 +275,9 @@ function maps()
     $page .= "Click a town name to purchase its map.<br /><br />\n";
     $page .= "<table width=\"90%\">\n";
     
-    $townquery = doquery("SELECT * FROM {{table}} ORDER BY id", "towns");
-    while ($townrow = mysql_fetch_array($townquery)) {
-        
+    $towns = query('select * from {{ table }}', 'towns', $link);
+
+    foreach ($towns->fetchAll() as $townrow) {
         if ($townrow["latitude"] >= 0) { $latitude = $townrow["latitude"] . "N,"; } else { $latitude = ($townrow["latitude"]*-1) . "S,"; }
         if ($townrow["longitude"] >= 0) { $longitude = $townrow["longitude"] . "E"; } else { $longitude = ($townrow["longitude"]*-1) . "W"; }
         
@@ -296,7 +290,6 @@ function maps()
         } else {
             $page .= "<tr><td width=\"25%\"><span class=\"light\">".$townrow["name"]."</span></td><td width=\"25%\"><span class=\"light\">Already mapped.</span></td><td width=\"35%\"><span class=\"light\">Location: $latitude $longitude</span></td><td width=\"15%\"><span class=\"light\">TP: ".$townrow["travelpoints"]."</span></td></tr>\n";
         }
-        
     }
     
     $page .= "</table><br />\n";
@@ -310,10 +303,9 @@ function maps()
  */
 function maps2($id)
 {
-    global $user, $queryCount;
+    global $user, $link;
     
-    $townquery = doquery("SELECT name,mapprice FROM {{table}} WHERE id='$id' LIMIT 1", "towns");
-    $townrow = mysql_fetch_array($townquery);
+    $townrow = quick('select name, mapprice from {{ table }} where id=?', 'towns', [$id], $link)->fetch();
     
     if ($user["gold"] < $townrow["mapprice"]) { display("You do not have enough gold to buy this map.<br /><br />You may return to <a href=\"index.php\">town</a>, <a href=\"index.php?do=maps\">store</a>, or use the direction buttons on the left to start exploring.", "Buy Maps"); die(); }
     
@@ -327,22 +319,21 @@ function maps2($id)
  */
 function maps3($id)
 {
-    if (isset($_POST["cancel"])) { header("Location: index.php"); die(); }
+    if (isset($_POST["cancel"])) { redirect("index.php"); }
     
-    global $user, $queryCount;
+    global $user, $link;
     
-    $townquery = doquery("SELECT name,mapprice FROM {{table}} WHERE id='$id' LIMIT 1", "towns");
-    $townrow = mysql_fetch_array($townquery);
+    $townrow = quick('select name, mapprice from {{ table }} where id=?', 'towns', [$id], $link)->fetch();
     
     if ($user["gold"] < $townrow["mapprice"]) { display("You do not have enough gold to buy this map.<br /><br />You may return to <a href=\"index.php\">town</a>, <a href=\"index.php?do=maps\">store</a>, or use the direction buttons on the left to start exploring.", "Buy Maps"); die(); }
     
     $mappedtowns = $user["towns"].",$id";
     $newgold = $user["gold"] - $townrow["mapprice"];
     
-    $updatequery = doquery("UPDATE {{table}} SET towns='$mappedtowns',gold='$newgold' WHERE id='".$user["id"]."' LIMIT 1", "users");
+    $update = prepare('update {{ table }} set towns=?, gold=? where id=?', 'users', $link);
+    execute($update, [$mappedtowns, $newgold, $user['id']]);
     
     display("Thank you for purchasing this map.<br /><br />You may return to <a href=\"index.php\">town</a>, <a href=\"index.php?do=maps\">store</a>, or use the direction buttons on the left to start exploring.", "Buy Maps");
-    
 }
 
 /**
@@ -350,12 +341,11 @@ function maps3($id)
  */
 function travelto($id, $usepoints = true)
 {
-    global $user, $queryCount;
+    global $user, $link;
     
-    if ($user["currentaction"] == "Fighting") { header("Location: index.php?do=fight"); die(); }
+    if ($user["currentaction"] == "Fighting") { redirect("index.php?do=fight"); }
     
-    $townquery = doquery("SELECT name,travelpoints,latitude,longitude FROM {{table}} WHERE id='$id' LIMIT 1", "towns");
-    $townrow = mysql_fetch_array($townquery);
+    $townrow = quick('select name, travelpoints, latitude, longitude from {{ table }} where id=?', 'towns', [$id], $link)->fetch();
     
     if ($usepoints==true) { 
         if ($user["currenttp"] < $townrow["travelpoints"]) { 
@@ -387,7 +377,8 @@ function travelto($id, $usepoints = true)
         $mapped = "towns='".$mapped."',";
     }
     
-    $updatequery = doquery("UPDATE {{table}} SET currentaction='In Town',$mapped currenttp='$newtp',latitude='$newlat',longitude='$newlon' WHERE id='$newid' LIMIT 1", "users");
+    $update = prepare("update {{ table }} set currentaction='In Town',{$mapped} currenttp=?, latitude=?, longitude=? where id=?", 'users', $link);
+    execute($update, [$newtp, $newlat, $newlon, $newid]);
     
     $page = "You have travelled to ".$townrow["name"].". You may now <a href=\"index.php\">enter this town</a>.";
     display($page, "Travel To");

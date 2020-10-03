@@ -1,12 +1,12 @@
 <?php // app/Libs/Heal.php :: Handles stuff from the Quick Spells menu. (Healing spells only... other spells are handled in fight.php.)
 
-function healspells($id) {
-    
-    global $user;
+function healspells($id)
+{
+    global $user, $link;
     
     $userspells = explode(",",$user["spells"]);
-    $spellquery = doquery("SELECT * FROM {{table}} WHERE id='$id' LIMIT 1", "spells");
-    $spellrow = mysql_fetch_array($spellquery);
+    $spellrow = quick('select * from {{ table }} where id=?', 'spells', [$id], $link)->fetch();
+
     
     // All the various ways to error out.
     $spell = false;
@@ -23,9 +23,8 @@ function healspells($id) {
     if ($user["maxhp"] < $newhp) { $spellrow["attribute"] = $user["maxhp"] - $user["currenthp"]; $newhp = $user["currenthp"] + $spellrow["attribute"]; }
     $newmp = $user["currentmp"] - $spellrow["mp"];
     
-    $updatequery = doquery("UPDATE {{table}} SET currenthp='$newhp', currentmp='$newmp' WHERE id='".$user["id"]."' LIMIT 1", "users");
+    $update = prepare('update {{ table }} set currenthp=?, currentmp=? where id=?', 'users', $link);
+    execute($update, [$newhp, $newmp, $user['id']]);
     
     display("You have cast the ".$spellrow["name"]." spell, and gained ".$spellrow["attribute"]." Hit Points. You can now continue <a href=\"index.php\">exploring</a>.", "Healing Spell");
-    die();
-    
 }

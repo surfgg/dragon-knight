@@ -2,15 +2,14 @@
 
 require 'app/Libs/Helpers.php';
 
-$link = opendb();
-$testLink = openLink();
-$control = getControl($testLink);
+$link = openLink();
+$control = getControl($link);
 
 // If the user isn't logged in, redirect to the login page
-if (! checkcookies($testLink)) { redirect('users.php?do=login'); }
+if (! checkcookies($link)) { redirect('users.php?do=login'); }
 
 // Get the user's data based on the cookie.
-$user = getUserFromCookie($testLink);
+$user = getUserFromCookie($link);
 
 // Force verify if the user isn't verified yet.
 if ($control['verifyemail'] == 1 && $user["verify"] != 1) { redirect('users.php?do=verify'); }
@@ -47,7 +46,7 @@ function doDefault()
 
 function main()
 {
-    global $control, $testLink;
+    global $control, $link;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -69,7 +68,7 @@ function main()
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Main Settings");
         }
 
-        $query = prepare("update {{ table }} set gamename=?, gamesize=?, forumtype=?, forumaddress=?, class1name=?, class2name=?, class3name=?, diff1name=?, diff2name=?, diff3name=?, diff2mod=?, diff3mod=?, gameopen=?, verifyemail=?, gameurl=?, adminemail=?, shownews=?, showonline=?, showbabble=? WHERE id='1'", 'control', $testLink);
+        $query = prepare("update {{ table }} set gamename=?, gamesize=?, forumtype=?, forumaddress=?, class1name=?, class2name=?, class3name=?, diff1name=?, diff2name=?, diff3name=?, diff2mod=?, diff3mod=?, gameopen=?, verifyemail=?, gameurl=?, adminemail=?, shownews=?, showonline=?, showbabble=? WHERE id='1'", 'control', $link);
         execute($query, [
             $gamename,
             $gamesize,
@@ -119,9 +118,9 @@ function main()
 
 function items()
 {
-    global $testLink;
+    global $link;
 
-    $query = query('select id, name from {{ table }}', 'items', $testLink);
+    $query = query('select id, name from {{ table }}', 'items', $link);
     $page = "<b><u>Edit Items</u></b><br />Click an item's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
     $items = $query->fetchAll();
@@ -141,7 +140,7 @@ function items()
 
 function edititem($id)
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         $data = trimData($_POST);
@@ -160,13 +159,13 @@ function edititem($id)
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Items");
         }
 
-        $query = prepare('update {{ table }} set name=?, type=?, buycost=?, attribute=?, special=? where id=?', 'items', $testLink);
+        $query = prepare('update {{ table }} set name=?, type=?, buycost=?, attribute=?, special=? where id=?', 'items', $link);
         execute($query, [$data['name'], $data['type'], $data['buycost'], $data['attribute'], $data['special'], $id]);
         
         admindisplay("Item updated.","Edit Items");
     }   
         
-    $row = quick('select * from {{ table }} where id=?', 'items', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'items', [$id], $link)->fetch();
 
     $page = gettemplate('admin/editItem');
     
@@ -180,9 +179,9 @@ function edititem($id)
 
 function drops()
 {
-    global $testLink;
+    global $link;
 
-    $query = query('select id, name from {{ table }}', 'drops', $testLink);
+    $query = query('select id, name from {{ table }}', 'drops', $link);
     $page = "<b><u>Edit Drops</u></b><br />Click an item's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
     $drops = $query->fetchAll();
@@ -202,7 +201,7 @@ function drops()
 
 function editdrop($id)
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -219,13 +218,13 @@ function editdrop($id)
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Drops");
         }
 
-        $query = prepare('update {{ table }} set name=?, mlevel=?, attribute1=?, attribute2=? where id=?', 'drops', $testLink);
+        $query = prepare('update {{ table }} set name=?, mlevel=?, attribute1=?, attribute2=? where id=?', 'drops', $link);
         execute($query, [$name, $mlevel, $attribute1, $attribute2, $id]);
         
         admindisplay("Drop updated.","Edit Drops");
     }
     
-    $row = quick('select * from {{ table }} where id=?', 'drops', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'drops', [$id], $link)->fetch();
 
     $page = gettemplate('admin/editDrop');
     $page = parsetemplate($page, $row);
@@ -235,9 +234,9 @@ function editdrop($id)
 
 function towns()
 {
-    global $testLink;
+    global $link;
 
-    $query = query('select id, name from {{ table }}', 'towns', $testLink);
+    $query = query('select id, name from {{ table }}', 'towns', $link);
     $page = "<b><u>Edit Towns</u></b><br />Click a town's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
     $towns = $query->fetchAll();
@@ -257,7 +256,7 @@ function towns()
 
 function edittown($id)
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -278,7 +277,7 @@ function edittown($id)
         if ($itemslist == "") { $errors++; $errorlist .= "Items List is required.<br />"; }
         
         if ($errors == 0) {
-            $query = prepare('update {{ table }} set name=?, latitude=?, longitude=?, innprice=?, mapprice=?, travelpoints=?, itemslist=? where id=?', 'towns', $testLink);
+            $query = prepare('update {{ table }} set name=?, latitude=?, longitude=?, innprice=?, mapprice=?, travelpoints=?, itemslist=? where id=?', 'towns', $link);
             execute($query, [$name, $latitude, $longitude, $innprice, $mapprice, $travelpoints, $itemslist, $id]);
 
             admindisplay("Town updated.","Edit Towns");
@@ -287,7 +286,7 @@ function edittown($id)
         admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Towns");
     }
     
-    $row = quick('select * from {{ table }} where id=?', 'towns', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'towns', [$id], $link)->fetch();
 
     $page = gettemplate('admin/editTown');
     $page = parsetemplate($page, $row);
@@ -297,10 +296,10 @@ function edittown($id)
 
 function monsters()
 {
-    global $control, $testLink;
+    global $control, $link;
     
-    $statrow = query('select * from {{ table }} order by level desc limit 1', 'monsters', $testLink)->fetch();
-    $query = query('select id, name from {{ table }}', 'monsters', $testLink);
+    $statrow = query('select * from {{ table }} order by level desc limit 1', 'monsters', $link)->fetch();
+    $query = query('select id, name from {{ table }}', 'monsters', $link);
 
     $page = "<b><u>Edit Monsters</u></b><br />";
     
@@ -328,7 +327,7 @@ function monsters()
 
 function editmonster($id)
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -352,13 +351,13 @@ function editmonster($id)
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit monsters");
         }
 
-        $query = prepare('update {{ table }} set name=?, maxhp=?, maxdam=?, armor=?, level=?, maxexp=?, maxgold=?, immune=? where id=?', 'monsters', $testLink);
+        $query = prepare('update {{ table }} set name=?, maxhp=?, maxdam=?, armor=?, level=?, maxexp=?, maxgold=?, immune=? where id=?', 'monsters', $link);
         execute($query, [$name, $maxhp, $maxdam, $armor, $level, $maxexp, $maxgold, $immune, $id]);
         
         admindisplay("Monster updated.","Edit monsters");
     }   
         
-    $row = quick('select * from {{ table }} where id=?', 'monsters', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'monsters', [$id], $link)->fetch();
     $page = gettemplate('admin/editMonster');
     
     if ($row["immune"] == 1) { $row["immune1select"] = "selected=\"selected\" "; } else { $row["immune1select"] = ""; }
@@ -371,9 +370,9 @@ function editmonster($id)
 
 function spells()
 {
-    global $testLink;
+    global $link;
 
-    $query = query('select id, name from {{ table }}', 'spells', $testLink);
+    $query = query('select id, name from {{ table }}', 'spells', $link);
     $page = "<b><u>Edit Spells</u></b><br />Click a spell's name to edit it.<br /><br /><table width=\"50%\">\n";
     $count = 1;
     $spells = $query->fetchAll();
@@ -394,7 +393,7 @@ function spells()
 
 function editspell($id)
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -411,13 +410,13 @@ function editspell($id)
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Edit Spells");
         }
 
-        $query = prepare('update {{ table }} set name=?, mp=?, attribute=?, type=? where id=?', 'spells', $testLink);
+        $query = prepare('update {{ table }} set name=?, mp=?, attribute=?, type=? where id=?', 'spells', $link);
         execute($query, [$name, $mp, $attribute, $type, $id]);
         
         admindisplay("Spell updated.","Edit Spells");
     }   
         
-    $row = quick('select * from {{ table }} where id=?', 'spells', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'spells', [$id], $link)->fetch();
 
     $page = gettemplate('admin/editSpell');
 
@@ -434,9 +433,9 @@ function editspell($id)
 
 function levels()
 {
-    global $testLink;
+    global $link;
 
-    $row = query('select id from {{ table }} order by id desc limit 1', 'levels', $testLink)->fetch();
+    $row = query('select id from {{ table }} order by id desc limit 1', 'levels', $link)->fetch();
     
     $options = "";
     for($i = 2; $i < $row["id"]; $i++) {
@@ -451,7 +450,7 @@ function levels()
 
 function editlevel()
 {
-    global $testLink, $control;
+    global $link, $control;
 
     if (!isset($_POST["level"])) { admindisplay("No level to edit.", "Edit Levels"); }
     $id = $_POST["level"];
@@ -521,12 +520,12 @@ function editlevel()
             $id
         ];
         
-        quick($query, 'levels', $data, $testLink);
+        quick($query, 'levels', $data, $link);
 
         admindisplay("Level updated.","Edit Levels");
     }   
         
-    $row = quick('select * from {{ table }} where id=?', 'levels', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'levels', [$id], $link)->fetch();
 
     $row['class1name'] = $control["class1name"];
     $row['class2name'] = $control["class2name"];
@@ -540,9 +539,9 @@ function editlevel()
 
 function users()
 {
-    global $testLink;
+    global $link;
 
-    $query = query('select id, username from {{ table }}', 'users', $testLink);
+    $query = query('select id, username from {{ table }}', 'users', $link);
     $page = "<b><u>Edit Users</u></b><br />Click a username to edit the account.<br /><br /><table width=\"50%\">\n";
     $count = 1;
     $users = $query->fetchAll();
@@ -562,7 +561,7 @@ function users()
 
 function edituser($id)
 {
-    global $testLink, $control;
+    global $link, $control;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -676,11 +675,11 @@ function edituser($id)
             $towns, $id
         ];
 
-        quick($query, 'users', $data, $testLink);
+        quick($query, 'users', $data, $link);
         admindisplay("User updated.","Edit Users");
     }   
     
-    $row = quick('select * from {{ table }} where id=?', 'users', [$id], $testLink)->fetch();
+    $row = quick('select * from {{ table }} where id=?', 'users', [$id], $link)->fetch();
 
     $page = gettemplate('admin/editUser');
 
@@ -707,7 +706,7 @@ function edituser($id)
 
 function addnews()
 {
-    global $testLink;
+    global $link;
 
     if (isset($_POST["submit"])) {
         extract($_POST);
@@ -719,7 +718,7 @@ function addnews()
             admindisplay("<b>Errors:</b><br /><div style=\"color:red;\">$errorlist</div><br />Please go back and try again.", "Add News");
         }
 
-        $query = prepare('insert into {{ table }} set postdate=now(), content=?', 'news', $testLink);
+        $query = prepare('insert into {{ table }} set postdate=now(), content=?', 'news', $link);
         execute($query, [$content]);
 
         admindisplay("News post added.","Add News");
