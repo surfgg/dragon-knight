@@ -1,0 +1,74 @@
+<b><u>Edit Users</u></b><br /><br />
+<form action="admin.php?do=edituser:{{ id }}" method="post">
+<table width="90%">
+<tr><td width="20%">ID:</td><td>{{id}}</td></tr>
+<tr><td width="20%">Username:</td><td>{{username}}</td></tr>
+<tr><td width="20%">Email:</td><td><input type="text" name="email" size="30" maxlength="100" value="{{email}}" /></td></tr>
+<tr><td width="20%">Verify:</td><td><input type="text" name="verify" size="30" maxlength="8" value="{{verify}}" /></td></tr>
+<tr><td width="20%">Register Date:</td><td>{{regdate}}</td></tr>
+<tr><td width="20%">Last Online:</td><td>{{onlinetime}}</td></tr>
+<tr><td width="20%">Auth Level:</td><td><select name="authlevel"><option value="0" {{auth0select}}>User</option><option value="1" {{auth1select}}>Admin</option><option value="2" {{auth2select}}>Blocked</option></select><br /><span class="small">Set to "Blocked" to temporarily (or permanently) ban a user.</span></td></tr>
+
+<tr><td colspan="2" style="background-color:#cccccc;">&nbsp;</td></tr>
+
+<tr><td width="20%">Latitude:</td><td><input type="text" name="latitude" size="5" maxlength="6" value="{{latitude}}" /></td></tr>
+<tr><td width="20%">Longitude:</td><td><input type="text" name="longitude" size="5" maxlength="6" value="{{longitude}}" /></td></tr>
+<tr><td width="20%">Difficulty:</td><td><select name="difficulty"><option value="1" {{diff1select}}>{{diff1name}}</option><option value="2" {{diff2select}}>{{diff2name}}</option><option value="3" {{diff3select}}>{{ diff3name }}</option></select></td></tr>
+<tr><td width="20%">Character Class:</td><td><select name="charclass"><option value="1" {{class1select}}>{{class1name}}</option><option value="2" {{class2select}}>{{class2name}}</option><option value="3" {{class3select}}>{{ class3name }}</option></select></td></tr>
+
+<tr><td colspan="2" style="background-color:#cccccc;">&nbsp;</td></tr>
+
+<tr><td width="20%">Current Action:</td><td><input type="text" name="currentaction" size="30" maxlength="30" value="{{currentaction}}" /></td></tr>
+<tr><td width="20%">Current Fight:</td><td><input type="text" name="currentfight" size="5" maxlength="4" value="{{currentfight}}" /></td></tr>
+<tr><td width="20%">Current Monster:</td><td><input type="text" name="currentmonster" size="5" maxlength="6" value="{{currentmonster}}" /></td></tr>
+<tr><td width="20%">Current Monster HP:</td><td><input type="text" name="currentmonsterhp" size="5" maxlength="6" value="{{currentmonsterhp}}" /></td></tr>
+<tr><td width="20%">Current Monster Sleep:</td><td><input type="text" name="currentmonsterimmune" size="5" maxlength="3" value="{{currentmonsterimmune}}" /></td></tr>
+<tr><td width="20%">Current Monster Immune:</td><td><input type="text" name="currentmonstersleep" size="5" maxlength="3" value="{{currentmonstersleep}}" /></td></tr>
+<tr><td width="20%">Current Uber Damage:</td><td><input type="text" name="currentuberdamage" size="5" maxlength="3" value="{{currentuberdamage}}" /></td></tr>
+<tr><td width="20%">Current Uber Defense:</td><td><input type="text" name="currentuberdefense" size="5" maxlength="3" value="{{currentuberdefense}}" /></td></tr>
+
+<tr><td colspan="2" style="background-color:#cccccc;">&nbsp;</td></tr>
+
+<tr><td width="20%">Current HP:</td><td><input type="text" name="currenthp" size="5" maxlength="6" value="{{currenthp}}" /></td></tr>
+<tr><td width="20%">Current MP:</td><td><input type="text" name="currentmp" size="5" maxlength="6" value="{{currentmp}}" /></td></tr>
+<tr><td width="20%">Current TP:</td><td><input type="text" name="currenttp" size="5" maxlength="6" value="{{currenttp}}" /></td></tr>
+<tr><td width="20%">Max HP:</td><td><input type="text" name="maxhp" size="5" maxlength="6" value="{{maxhp}}" /></td></tr>
+<tr><td width="20%">Max MP:</td><td><input type="text" name="maxmp" size="5" maxlength="6" value="{{maxmp}}" /></td></tr>
+<tr><td width="20%">Max TP:</td><td><input type="text" name="maxtp" size="5" maxlength="6" value="{{maxtp}}" /></td></tr>
+
+<tr><td colspan="2" style="background-color:#cccccc;">&nbsp;</td></tr>
+
+<tr><td width="20%">Level:</td><td><input type="text" name="level" size="5" maxlength="5" value="{{level}}" /></td></tr>
+<tr><td width="20%">Gold:</td><td><input type="text" name="gold" size="10" maxlength="8" value="{{gold}}" /></td></tr>
+<tr><td width="20%">Experience:</td><td><input type="text" name="experience" size="10" maxlength="8" value="{{experience}}" /></td></tr>
+<tr><td width="20%">Gold Bonus:</td><td><input type="text" name="goldbonus" size="5" maxlength="5" value="{{goldbonus}}" /></td></tr>
+<tr><td width="20%">Experience Bonus:</td><td><input type="text" name="expbonus" size="5" maxlength="5" value="{{expbonus}}" /></td></tr>
+<tr><td width="20%">Strength:</td><td><input type="text" name="strength" size="5" maxlength="5" value="{{strength}}" /></td></tr>
+<tr><td width="20%">Dexterity:</td><td><input type="text" name="dexterity" size="5" maxlength="5" value="{{dexterity}}" /></td></tr>
+<tr><td width="20%">Attack Power:</td><td><input type="text" name="attackpower" size="5" maxlength="5" value="{{attackpower}}" /></td></tr>
+<tr><td width="20%">Defense Power:</td><td><input type="text" name="defensepower" size="5" maxlength="5" value="{{defensepower}}" /></td></tr>
+
+<tr><td colspan="2" style="background-color:#cccccc;">&nbsp;</td></tr>
+
+<tr><td width="20%">Weapon ID:</td><td><input type="text" name="weaponid" size="5" maxlength="5" value="{{weaponid}}" /></td></tr>
+<tr><td width="20%">Armor ID:</td><td><input type="text" name="armorid" size="5" maxlength="5" value="{{armorid}}" /></td></tr>
+<tr><td width="20%">Shield ID:</td><td><input type="text" name="shieldid" size="5" maxlength="5" value="{{shieldid}}" /></td></tr>
+<tr><td width="20%">Slot 1 ID:</td><td><input type="text" name="slot1id" size="5" maxlength="5" value="{{slot1id}}" /></td></tr>
+<tr><td width="20%">Slot 2 ID:</td><td><input type="text" name="slot2id" size="5" maxlength="5" value="{{slot2id}}" /></td></tr>
+<tr><td width="20%">Slot 3 ID:</td><td><input type="text" name="slot3id" size="5" maxlength="5" value="{{slot3id}}" /></td></tr>
+<tr><td width="20%">Weapon Name:</td><td><input type="text" name="weaponname" size="30" maxlength="30" value="{{weaponname}}" /></td></tr>
+<tr><td width="20%">Armor Name:</td><td><input type="text" name="armorname" size="30" maxlength="30" value="{{armorname}}" /></td></tr>
+<tr><td width="20%">Shield Name:</td><td><input type="text" name="shieldname" size="30" maxlength="30" value="{{shieldname}}" /></td></tr>
+<tr><td width="20%">Slot 1 Name:</td><td><input type="text" name="slot1name" size="30" maxlength="30" value="{{slot1name}}" /></td></tr>
+<tr><td width="20%">Slot 2 Name:</td><td><input type="text" name="slot2name" size="30" maxlength="30" value="{{slot2name}}" /></td></tr>
+<tr><td width="20%">Slot 3 Name:</td><td><input type="text" name="slot3name" size="30" maxlength="30" value="{{slot3name}}" /></td></tr>
+
+<tr><td colspan="2" style="background-color:#cccccc;">&nbsp;</td></tr>
+
+<tr><td width="20%">Drop Code:</td><td><input type="text" name="dropcode" size="5" maxlength="8" value="{{dropcode}}" /></td></tr>
+<tr><td width="20%">Spells:</td><td><input type="text" name="spells" size="50" maxlength="50" value="{{spells}}" /></td></tr>
+<tr><td width="20%">Towns:</td><td><input type="text" name="towns" size="50" maxlength="50" value="{{towns}}" /></td></tr>
+
+</table>
+<input type="submit" name="submit" value="Submit" /> <input type="reset" name="reset" value="Reset" />
+</form>

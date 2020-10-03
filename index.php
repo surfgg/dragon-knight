@@ -9,15 +9,15 @@ require 'app/Libs/Explore.php';
 require 'app/Libs/Towns.php';
 require 'app/Libs/Fight.php';
 
-$link = opendb();
-$testLink = openLink();
-$control = getControl($testLink);
+opendb();
+$link = openLink();
+$control = getControl($link);
 
 // If the user isn't logged in, redirect to the login page
-if (! checkcookies($testLink)) { redirect('users.php?do=login'); }
+if (! checkcookies($link)) { redirect('users.php?do=login'); }
 
 // Get the user's data based on the cookie.
-$user = getUserFromCookie($testLink);
+$user = getUserFromCookie($link);
 
 // Force verify if the user isn't verified yet.
 if ($control['verifyemail'] == 1 && $user["verify"] != 1) { redirect('users.php?do=verify'); }
@@ -85,17 +85,17 @@ function doCurrentAction()
  */
 function displayTown()
 {
-    global $user, $control, $testLink, $queryCount;
+    global $user, $control, $link, $queryCount;
 
-    $townrow = getTown($user['latitude'], $user['longitude'], $testLink);
+    $townrow = getTown($user['latitude'], $user['longitude'], $link);
     
     // Generate the news box
     if ($control["shownews"] == 1) { 
-        $news = query('select * from {{ table }} order by id desc limit 1', 'news', $testLink);
+        $news = query('select * from {{ table }} order by id desc limit 1', 'news', $link);
         $news = $news->fetch();
         
         $townrow['news'] = "<table width=\"95%\"><tr><td class=\"title\">Latest News</td></tr><tr><td>\n";
-        $townrow['news'] .= "<span class=\"light\">[".prettydate($news["postdate"])."]</span><br />".nl2br($news["content"]);
+        $townrow['news'] .= $news ? "<span class=\"light\">[".prettydate($news["postdate"])."]</span><br />".nl2br($news["content"]) : "Woah! There's no news post.";
         $townrow['news'] .= "</td></tr></table>\n";
     } else {
         $townrow['news'] = '';
@@ -103,7 +103,7 @@ function displayTown()
     
     // Who's online? Shows users who've logged in within the last 10 minutes
     if ($control["showonline"] == 1) {
-        $online = query('select id, username from {{ table }} where onlinetime >= date_sub(now(), interval 10 minute) ORDER BY username', 'users', $testLink);
+        $online = query('select id, username from {{ table }} where onlinetime >= date_sub(now(), interval 10 minute) ORDER BY username', 'users', $link);
         $online = $online->fetchAll();
 
         $townrow["whosonline"] = "<table width=\"95%\"><tr><td class=\"title\">Who's Online</td></tr><tr><td>\n";
@@ -137,7 +137,7 @@ function displayTown()
 function showchar()
 {
     
-    global $user, $control, $testLink;
+    global $user, $control, $link;
     
     // Format various userrow stuffs.
     $user["experience"] = number_format($user["experience"]);
@@ -153,7 +153,7 @@ function showchar()
         $user["plusgold"] = "<span class=\"light\">(".$user["goldbonus"]."%)</span>";
     } else { $user["plusgold"] = ""; }
     
-    $exp = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $testLink);
+    $exp = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $link);
     $levelrow = execute($exp, [$user['level'] + 1])->fetch();
     if ($user["level"] < 99) { $user["nextlevel"] = number_format($levelrow[$user["charclass"]."_exp"]); } else { $user["nextlevel"] = "<span class=\"light\">None</span>"; }
 
@@ -165,7 +165,7 @@ function showchar()
     elseif ($user["difficulty"] == 2) { $user["difficulty"] = $control["diff2name"]; }
     elseif ($user["difficulty"] == 3) { $user["difficulty"] = $control["diff3name"]; }
     
-    $spells = query('select id, name from {{ table }}', 'spells', $testLink);
+    $spells = query('select id, name from {{ table }}', 'spells', $link);
     $userspells = explode(",", $user["spells"]);
     $user["magiclist"] = "";
     foreach ($spells->fetchAll() as $spellrow) {
@@ -191,9 +191,9 @@ function showchar()
 
 function onlinechar($id)
 {
-    global $control, $testLink;
+    global $control, $link;
 
-    $user = getUserFromId($id, $testLink);
+    $user = getUserFromId($id, $link);
     
     // Format various userrow stuffs.
     $user["experience"] = number_format($user["experience"]);
@@ -209,7 +209,7 @@ function onlinechar($id)
         $user["plusgold"] = "<span class=\"light\">(".$user["goldbonus"]."%)</span>";
     } else { $user["plusgold"] = ""; }
     
-    $exp = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $testLink);
+    $exp = prepare("select {$user['charclass']}_exp from {{ table }} where id=? limit 1", 'levels', $link);
     $levelrow = execute($exp, [$user['level'] + 1])->fetch();
     $user["nextlevel"] = number_format($levelrow[$user["charclass"]."_exp"]);
 
@@ -239,11 +239,11 @@ function showmap()
 
 function babblebox()
 {
-    global $user, $testLink;
+    global $user, $link;
     
     if (isset($_POST['babble'])) {
         if (! empty($_POST['babble'])) {
-            $insert = prepare('insert into {{ table }} set posttime=now(), author=?, babble=?', 'babble', $testLink);
+            $insert = prepare('insert into {{ table }} set posttime=now(), author=?, babble=?', 'babble', $link);
             execute($insert, [$user['username'], $_POST['babble']]);
         }
 

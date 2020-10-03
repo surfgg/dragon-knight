@@ -5,13 +5,10 @@
 <style type="text/css">
 body {
   background-image: url(images/background.jpg);
-  color: black;
-  font: 11px verdana;
 }
 table {
   border-style: none;
   padding: 0px;
-  font: 11px verdana;
 }
 td {
   border-style: none;
@@ -72,8 +69,8 @@ a:hover {
 <tr><td><b>Type</b></td><td><b>Name</b></td><td><b>Cost</b></td><td><b>Attribute</b></td><td><b>Special</b></td></tr>
 <?php
     $count = 1;
-    $itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "items");
-    while ($itemsrow = mysql_fetch_array($itemsquery)) {
+    $items = query('select * from {{ table }} order by id', 'items', $link);
+    foreach ($items->fetchAll() as $itemsrow) {
         if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
         if ($itemsrow["type"] == 1) { $image = "weapon"; $power = "Attack"; } elseif ($itemsrow["type"] == 2) { $image = "armor"; $power = "Defense"; } else { $image = "shield"; $power = "Defense"; }
         if ($itemsrow["special"] != "X") {
@@ -102,8 +99,8 @@ a:hover {
 <tr><td><b>Name</b></td><td><b>Monster Level</b></td><td><b>Attribute 1</b></td><td><b>Attribute 2</b></td></tr>
 <?php
 $count = 1;
-$itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "drops");
-while ($itemsrow = mysql_fetch_array($itemsquery)) {
+$drops = query('select * from {{ table }} order by id', 'drops', $link);
+foreach ($drops->fetchAll() as $itemsrow) {
     if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
     if ($itemsrow["attribute1"] != "X") {
         $special1 = explode(",",$itemsrow["attribute1"]);

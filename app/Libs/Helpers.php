@@ -102,20 +102,6 @@ function getQueryCount()
     return $queryCount;
 }
 
-/**
- * This streamlines getting the prefixed table names for
- * the database. Will eventually be moved into a database
- * class.
- */
-function tablePrefix(string $table)
-{
-    if (!empty(config('db.prefix'))) {
-        return config('db.prefix') . '_' . $table;
-    }
-
-    return $table;
-}
-
 function opendb()
 {
     $link = mysql_connect(config('db.server'), config('db.user'), config('db.password')) or die(mysql_error());
@@ -124,12 +110,10 @@ function opendb()
 }
 
 function doquery($query, $table) { // Something of a tiny little database abstraction layer.
-    
     global $queryCount;
-    $sqlquery = mysql_query(str_replace("{{table}}", tablePrefix($table), $query)) or die(mysql_error());
+    $sqlquery = mysql_query(str_replace("{{table}}", prefix($table), $query)) or die(mysql_error());
     $queryCount++;
     return $sqlquery;
-
 }
 
 /**
@@ -172,8 +156,7 @@ function getTown(int $latitude, int $longitude, $link = null)
 {
     $link = openLinkIfNull($link);
     $town = prepare('select * from {{table}} where latitude=? and longitude=? limit 1', 'towns');
-    $town = execute($town, [$latitude, $longitude]);
-    return $town->fetch();
+    return execute($town, [$latitude, $longitude])->fetch();
 }
 
 /**
@@ -227,6 +210,22 @@ function is_email(string $email)
 function safe(string $string = '')
 {
     return htmlentities($string, ENT_QUOTES);
+}
+
+/**
+ * A function that can loop through an array and run trim() on it.
+ * Usually used to pull $_POST data into a friendlier-to-use variable.
+ */
+function trimData(array $data)
+{
+    $result = [];
+
+    foreach ($data as $k => $d) {
+        if (is_string($d)) { $d = trim($d); }
+        $result[$k] = $d;
+    }
+
+    return $result;
 }
 
 /**
@@ -314,11 +313,7 @@ function getUserFromId(int $id, $link = null)
 
 function admindisplay($content, $title) { // Finalize page and output to browser.
     
-    global $queryCount, $user, $controlrow, $starttime, $version, $build;
-    if (!isset($controlrow)) {
-        $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-        $controlrow = mysql_fetch_array($controlquery);
-    }
+    global $queryCount, $user, $control, $starttime, $version, $build, $link;
     
     $template = gettemplate("admin");
     
@@ -336,19 +331,15 @@ function admindisplay($content, $title) { // Finalize page and output to browser
     $page = parsetemplate($template, $finalarray);
     $page = $xml . $page;
 
-    if ($controlrow["compression"] == 1) { ob_start("ob_gzhandler"); }
     echo $page;
     die();
     
 }
 
-function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, $badstart=false) { // Finalize page and output to browser.
-    
-    global $queryCount, $user, $controlrow, $version, $build;
-    if (!isset($controlrow)) {
-        $controlquery = doquery("SELECT * FROM {{table}} WHERE id='1' LIMIT 1", "control");
-        $controlrow = mysql_fetch_array($controlquery);
-    }
+function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, $badstart=false)
+{
+    global $queryCount, $user, $control, $version, $build, $link;
+
     if ($badstart == false) { global $starttime; } else { $starttime = $badstart; }
     
     // Make page tags for XHTML validation.
@@ -368,22 +359,19 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
     if (isset($user)) {
         
         // Get userrow again, in case something has been updated.
-        $userquery = doquery("SELECT * FROM {{table}} WHERE id='".$user["id"]."' LIMIT 1", "users");
-        unset($user);
-        $user = mysql_fetch_array($userquery);
+        $user = quick('select * from {{ table }} where id=?', 'users', [$user['id']], $link)->fetch();
         
         // Current town name.
         if ($user["currentaction"] == "In Town") {
-            $townquery = doquery("SELECT * FROM {{table}} WHERE latitude='".$user["latitude"]."' AND longitude='".$user["longitude"]."' LIMIT 1", "towns");
-            $townrow = mysql_fetch_array($townquery);
+            $townrow = getTown($user['latitude'], $user['longitude'], $link);
             $user["currenttown"] = "Welcome to <b>".$townrow["name"]."</b>.<br /><br />";
         } else {
             $user["currenttown"] = "";
         }
         
-        if ($controlrow["forumtype"] == 0) { $user["forumslink"] = ""; }
-        elseif ($controlrow["forumtype"] == 1) { $user["forumslink"] = "<a href=\"forum.php\">Forum</a><br />"; }
-        elseif ($controlrow["forumtype"] == 2) { $user["forumslink"] = "<a href=\"".$controlrow["forumaddress"]."\">Forum</a><br />"; }
+        if ($control["forumtype"] == 0) { $user["forumslink"] = ""; }
+        elseif ($control["forumtype"] == 1) { $user["forumslink"] = "<a href=\"forum.php\">Forum</a><br />"; }
+        elseif ($control["forumtype"] == 2) { $user["forumslink"] = "<a href=\"".$control["forumaddress"]."\">Forum</a><br />"; }
         
         // Format various userrow stuffs...
         if ($user["latitude"] < 0) { $user["latitude"] = $user["latitude"] * -1 . "S"; } else { $user["latitude"] .= "N"; }
@@ -419,10 +407,10 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
         if ($user["currenthp"] <= ($user["maxhp"]/5)) { $user["currenthp"] = "<blink><span class=\"highlight\"><b>*".$user["currenthp"]."*</b></span></blink>"; }
         if ($user["currentmp"] <= ($user["maxmp"]/5)) { $user["currentmp"] = "<blink><span class=\"highlight\"><b>*".$user["currentmp"]."*</b></span></blink>"; }
 
-        $spellquery = doquery("SELECT id,name,type FROM {{table}}","spells");
+        $spellquery = query('select id, name, type from {{ table }}', 'spells', $link);
         $userspells = explode(",",$user["spells"]);
         $user["magiclist"] = "";
-        while ($spellrow = mysql_fetch_array($spellquery)) {
+        foreach ($spellquery->fetchAll() as $spellrow) {
             $spell = false;
             foreach($userspells as $a => $b) {
                 if ($b == $spellrow["id"] && $spellrow["type"] == 1) { $spell = true; }
@@ -435,9 +423,9 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
         
         // Travel To list.
         $townslist = explode(",",$user["towns"]);
-        $townquery2 = doquery("SELECT * FROM {{table}} ORDER BY id", "towns");
+        $townquery2 = query('select * from {{ table }}', 'towns', $link);
         $user["townslist"] = "";
-        while ($townrow2 = mysql_fetch_array($townquery2)) {
+        foreach ($townquery2->fetchAll() as $townrow2) {
             $town = false;
             foreach($townslist as $a => $b) {
                 if ($b == $townrow2["id"]) { $town = true; }
@@ -452,7 +440,7 @@ function display($content, $title, $topnav=true, $leftnav=true, $rightnav=true, 
     }
 
     $finalarray = array(
-        "dkgamename"=>$controlrow["gamename"],
+        "dkgamename"=>$control["gamename"],
         "title"=>$title,
         "content"=>$content,
         "rightnav"=>parsetemplate($rightnav,$user),

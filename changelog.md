@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added a super-helpful debug method that formats var_dump and dies, called `dd()`
 - Added two helper functions to increment and get the number of queries executed; `incrementQueryCounter` and `getQueryCount`
 - The PDO database methods now increments the global `$queryCounter` via `incrementQueryCounter()`
+- Created a new `resources` directory to contain css, images and sql query files
 
 ### Changed
 - Scripts that contain only functions have been moved into `app/Libs` and are included on an as-needed basis to cut down on root directory bloat
@@ -22,6 +23,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - `makesafe()` has been refactored to `safe()`, but performs the same function
 - All town, fight and exploration functions now use the PDO database methods
 - The `$numqueries` global variable has been refactored to `$queryCount`
+- All install pages are now contained in templates in `templates/install`
+- The installation `create` and `populate` queries have been moved into the new sql directory, `resoures/sql/install`
+- Errors in the admin account creation part of the installation process will now display the admin account field again, with the errors listed
+- The install script now uses all PDO functions
+- The help pages now all use the PDO functions, and share a single connection to the database
+- All the forum's functionality now uses the new PDO functions
+- Messages, titles and usernames in the forum are now properly escaped before being output
+- The admin panel and all it's functions now use the PDO database functions
+- The admin panel's pages and forms are now in templates files in `templates/admin`
 
 ### Deprecated
 - The `mysql_` shim and all old functions using the `mysql_` functions are being phased out and replaced with PDO functions
@@ -29,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Removed
 - Removed all old XML validation content. Pages are now only made with HTML5 compliant tags.
 - `charname` has been completely removed from the game - the installer has been updated to not add that column in the database. All relevant bits of code have been updated as well.
+- The "fifth" page of the installation process, originally used to send a "call home" for installs, has been removed. A similar feature will be added again later.
 
 ## v1.2.0 - 9/30/2020
 ### Changed

@@ -5,13 +5,10 @@
 <style type="text/css">
 body {
   background-image: url(images/background.jpg);
-  color: black;
-  font: 11px verdana;
 }
 table {
   border-style: none;
   padding: 0px;
-  font: 11px verdana;
 }
 td {
   border-style: none;
@@ -72,8 +69,9 @@ a:hover {
 <tr><td><b>Name</b></td><td><b>Cost</b></td><td><b>Type</b></td><td><b>Attribute</b></td></tr>
 <?php
 $count = 1;
-$itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "spells");
-while ($itemsrow = mysql_fetch_array($itemsquery)) {
+$spells = query('select * from {{ table }}', 'spells', $link);
+
+foreach ($spells->fetchAll() as $itemsrow) {
     if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
     if ($itemsrow["type"] == 1) { $type = "Heal"; }
     elseif ($itemsrow["type"] == 2) { $type = "Hurt"; }

@@ -5,13 +5,10 @@
 <style type="text/css">
 body {
   background-image: url(images/background.jpg);
-  color: black;
-  font: 11px verdana;
 }
 table {
   border-style: none;
   padding: 0px;
-  font: 11px verdana;
 }
 td {
   border-style: none;
@@ -72,8 +69,9 @@ a:hover {
 <tr><td><b>Name</b></td><td><b>Max HP</b></td><td><b>Max Damage</b></td><td><b>Armor</b></td><td><b>Level</b></td><td><b>Max Exp.</b></td><td><b>Max Gold</b></td><td><b>Immunity</b></td></tr>
 <?php
 $count = 1;
-$itemsquery = doquery("SELECT * FROM {{table}} ORDER BY id", "monsters");
-while ($itemsrow = mysql_fetch_array($itemsquery)) {
+$monsters = query('select * from {{ table }}', 'monsters', $link);
+
+foreach ($monsters->fetchAll() as $itemsrow) {
     if ($count == 1) { $color = "bgcolor=\"#ffffff\""; $count = 2; } else { $color = ""; $count = 1; }
     if ($itemsrow["immune"] == 0) { $immune = "<span class=\"light\">None</span>"; } elseif ($itemsrow["immune"] == 1) { $immune = "Hurt"; } else { $immune = "Hurt & Sleep"; }
     echo "<tr><td $color width=\"30%\">".$itemsrow["name"]."</td><td $color width=\"10%\">".$itemsrow["maxhp"]."</td><td $color width=\"10%\">".$itemsrow["maxdam"]."</td><td $color width=\"10%\">".$itemsrow["armor"]."</td><td $color width=\"10%\">".$itemsrow["level"]."</td><td $color width=\"10%\">".$itemsrow["maxexp"]."</td><td $color width=\"10%\">".$itemsrow["maxgold"]."</td><td $color width=\"20%\">$immune</td></tr>\n";
