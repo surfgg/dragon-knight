@@ -9,7 +9,7 @@ return [
      * - build: an optional build name, you can leave it empty
      */
     'general' => [
-        'version' => '1.1.11',
+        'version' => '1.3.0',
         'build' => '',
     ],
 
